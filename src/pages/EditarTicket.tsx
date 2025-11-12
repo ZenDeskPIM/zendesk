@@ -70,6 +70,11 @@ export default function EditarTicket() {
 
   const handleSalvar = async () => {
     if (!id || !status) return;
+    // Evita chamada desnecessária quando não há alteração de status
+    if (status === ticket?.status) {
+      toast({ title: "Nada a alterar", description: "O status selecionado já está aplicado." });
+      return;
+    }
     try {
       setLoading(true);
       await updateTicketStatusByNumber(id, status);

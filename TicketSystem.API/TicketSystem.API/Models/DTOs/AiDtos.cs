@@ -10,10 +10,9 @@ namespace TicketSystem.API.Models.DTOs
         [Required]
         public string Description { get; set; } = string.Empty;
 
-        // Adaptive feedback from the client to make suggestions iterative and non-repetitive
-        public List<string>? DoneActions { get; set; } = new();
-        public List<string>? RejectedActions { get; set; } = new();
-        public List<string>? PriorSuggestions { get; set; } = new();
+        public List<string>? DoneActions { get; set; }
+        public List<string>? RejectedActions { get; set; }
+        public List<string>? PriorSuggestions { get; set; }
     }
 
     public class AiAnalyzeResponse
@@ -25,8 +24,6 @@ namespace TicketSystem.API.Models.DTOs
         public string? PriorityHint { get; set; }
         public string? Rationale { get; set; }
         public string? Source { get; set; }
-
-        // Extras for an adaptive flow
         public string? NextAction { get; set; }
         public List<string> FollowUpQuestions { get; set; } = new();
     }

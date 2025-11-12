@@ -49,12 +49,15 @@ namespace TicketSystem.API.Configuration
                 .ForMember(d => d.Customer, o => o.MapFrom(s => s.Customer.FullName))
                 .ForMember(d => d.AssignedAgent, o => o.MapFrom(s => s.AssignedAgent != null ? s.AssignedAgent.FullName : null))
                 .ForMember(d => d.MessageCount, o => o.MapFrom(s => s.Messages.Count))
-                .ForMember(d => d.IsOverdue, o => o.MapFrom(s => s.IsOverdue));
+                .ForMember(d => d.IsOverdue, o => o.MapFrom(s => s.IsOverdue))
+                .ForMember(d => d.ResolutionTimeHours, o => o.MapFrom(s => s.ResolutionTimeHours))
+                .ForMember(d => d.FirstResponseTimeHours, o => o.MapFrom(s => s.FirstResponseTimeHours))
+                .ForMember(d => d.FirstResponseAt, o => o.MapFrom(s => s.FirstResponseAt))
+                .ForMember(d => d.ResolvedAt, o => o.MapFrom(s => s.ResolvedAt))
+                .ForMember(d => d.ClosedAt, o => o.MapFrom(s => s.ClosedAt));
 
             CreateMap<Ticket, TicketDetailDto>()
                 .IncludeBase<Ticket, TicketSummaryDto>()
-                .ForMember(d => d.ResolutionTimeHours, o => o.MapFrom(s => s.ResolutionTimeHours))
-                .ForMember(d => d.FirstResponseTimeHours, o => o.MapFrom(s => s.FirstResponseTimeHours))
                 .ForMember(d => d.Messages, o => o.MapFrom(s => s.Messages));
 
             // Mensagens

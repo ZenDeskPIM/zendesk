@@ -9,7 +9,7 @@
  * - Tabela completa de tickets filtrada por setor, com indicação textual de SLA.
  * - Disponibilizar ações de exportação (placeholders para futura implementação real).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,37 +32,11 @@ import {
   Timer
 } from "lucide-react";
 import { useTickets } from "@/hooks/use-tickets";
+import { getReportsSummary, type ReportsSummary, type ReportsPeriod } from "@/lib/reports";
+import { listTickets } from "@/lib/tickets";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data for reports
-const mockReports = {
-  semanal: {
-    period: "Última Semana",
-    totalTickets: 32,
-    resolved: 28,
-    pending: 4,
-    avgResolutionTime: "1.8 horas",
-    departments: { "TI": 12, "Financeiro": 8, "RH": 7, "Operações": 5 },
-    priorities: { "Crítica": 2, "Alta": 8, "Média": 15, "Baixa": 7 }
-  },
-  mensal: {
-    period: "Janeiro 2024",
-    totalTickets: 127,
-    resolved: 104,
-    pending: 23,
-    avgResolutionTime: "2.5 horas",
-    departments: { "TI": 45, "Financeiro": 32, "RH": 28, "Operações": 22 },
-    priorities: { "Crítica": 8, "Alta": 35, "Média": 52, "Baixa": 32 }
-  },
-  trimestral: {
-    period: "Q4 2023",
-    totalTickets: 385,
-    resolved: 312,
-    pending: 73,
-    avgResolutionTime: "3.2 horas",
-    departments: { "TI": 140, "Financeiro": 95, "RH": 85, "Operações": 65 },
-    priorities: { "Crítica": 25, "Alta": 98, "Média": 162, "Baixa": 100 }
-  }
-};
+// Dados agora virão da API /reports/summary (removido mock local)
 
 // Tickets agora vêm do store (useTickets)
 
@@ -92,31 +66,115 @@ export default function Relatorios() {
   const [selectedPeriod, setSelectedPeriod] = useLocalStorage("relatorios:selectedPeriod", "mensal");
   const [selectedDepartment, setSelectedDepartment] = useLocalStorage("relatorios:selectedDepartment", "todos");
   const [activeTab, setActiveTab] = useLocalStorage("relatorios:activeTab", "relatorios");
-  const { tickets } = useTickets();
+  const { tickets, replaceAll } = useTickets();
 
-  // Filter reports based on selected period and department
-  const getFilteredReport = () => {
-    const baseReport = mockReports[selectedPeriod as keyof typeof mockReports];
+  const [summary, setSummary] = useState<ReportsSummary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    if (selectedDepartment === "todos") {
-      return baseReport;
+  useEffect(() => {
+    let ignore = false;
+    async function load() {
+      setLoading(true); setError(null);
+      try {
+        const data = await getReportsSummary(selectedPeriod as ReportsPeriod);
+        if (!ignore) setSummary(data);
+      } catch {
+        if (!ignore) setError("Falha ao carregar relatório");
+      } finally {
+        if (!ignore) setLoading(false);
+      }
     }
+    void load();
+    const id = setInterval(load, 120_000);
+    return () => { ignore = true; clearInterval(id); };
+  }, [selectedPeriod]);
 
-    // Filter by department
-    const deptKey = selectedDepartment.charAt(0).toUpperCase() + selectedDepartment.slice(1);
-    const filteredDepartments = { [deptKey]: baseReport.departments[deptKey] || 0 };
-    const totalFiltered = Object.values(filteredDepartments).reduce((acc, val) => acc + val, 0);
+  // Sincroniza tickets reais do backend para que aba "Todos Chamados" reflita dados persistidos.
+  // Sincroniza lista de tickets do backend para alimentar seções por status
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await listTickets({ page: 1, pageSize: 500 });
+        if (!cancelled) replaceAll(res.items);
+      } catch {
+        // Falha silenciosa; métricas de summary continuam funcionando
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [replaceAll]);
 
+  const filteredSummary = (() => {
+    // Se não veio summary da API (ex: 403 Customer sem permissão) mas temos tickets locais -> gera agregação completa local
+    if (!summary && tickets.length > 0) {
+      const now = new Date();
+      const periodStart = (() => {
+        switch (selectedPeriod) {
+          case 'semanal': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          case 'trimestral': return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          default: return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+      })();
+      const inWindow = tickets.filter(t => new Date(t.dataCriacao) >= periodStart);
+      return buildLocalSummary(inWindow);
+    }
+    if (!summary) return null; // ainda sem tickets locais ou carregando
+    // Fallback: se API retornou tudo zero mas temos tickets locais sincronizados, gera resumo local
+    const haveOnlyZeros = summary.totalTickets === 0 && summary.resolved === 0 && summary.pending === 0 && tickets.length > 0;
+    let base: ReportsSummary = summary;
+    if (haveOnlyZeros) {
+      const now = new Date();
+      const periodStart = ((): Date => {
+        switch (selectedPeriod) {
+          case 'semanal': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          case 'trimestral': return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          default: return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+      })();
+      const inWindow = tickets.filter(t => new Date(t.dataCriacao) >= periodStart);
+      base = buildLocalSummary(inWindow, summary.period);
+    }
+    if (selectedDepartment === 'todos') return base;
+    const deptNameMap: Record<string, string> = { ti: 'TI', financeiro: 'Financeiro', rh: 'RH', operacoes: 'Operações' };
+    const target = deptNameMap[selectedDepartment] ?? selectedDepartment;
+    const deptCount = base.departments[target] ?? 0;
+    const detailed = base.departmentsDetailed?.find(d => d.department === target);
     return {
-      ...baseReport,
-      totalTickets: totalFiltered,
-      resolved: Math.round(totalFiltered * 0.8),
-      pending: Math.round(totalFiltered * 0.2),
-      departments: filteredDepartments
-    };
-  };
+      ...base,
+      totalTickets: deptCount,
+      resolved: detailed?.resolved ?? Math.round(deptCount * 0.8),
+      pending: detailed?.pending ?? Math.max(0, deptCount - (detailed?.resolved ?? Math.round(deptCount * 0.8))),
+      departments: { [target]: deptCount }
+    } as ReportsSummary;
+  })();
 
-  const report = getFilteredReport();
+  function buildLocalSummary(inWindow: typeof tickets, period: ReportsPeriod = selectedPeriod as ReportsPeriod): ReportsSummary {
+    const totalTickets = inWindow.length;
+    const resolved = inWindow.filter(t => t.status === 'Resolvido' || t.status === 'Fechado').length;
+    const pending = totalTickets - resolved;
+    const departments: Record<string, number> = {};
+    const priorities: ReportsSummary['priorities'] = { Crítica: 0, Alta: 0, Média: 0, Baixa: 0 };
+    inWindow.forEach(t => {
+      departments[t.departamento] = (departments[t.departamento] ?? 0) + 1;
+      priorities[t.prioridade as keyof typeof priorities] = (priorities[t.prioridade as keyof typeof priorities] ?? 0) + 1;
+    });
+    return {
+      period,
+      totalTickets,
+      resolved,
+      pending,
+      avgResolutionHours: null,
+      departments,
+      priorities,
+      departmentsDetailed: Object.entries(departments).map(([department, total]) => ({
+        department,
+        total,
+        resolved: inWindow.filter(t => t.departamento === department && (t.status === 'Resolvido' || t.status === 'Fechado')).length,
+        pending: inWindow.filter(t => t.departamento === department && !(t.status === 'Resolvido' || t.status === 'Fechado')).length,
+      }))
+    };
+  }
 
   // Filter tickets based on department
   const getFilteredTickets = () => {
@@ -228,6 +286,15 @@ export default function Relatorios() {
         </TabsList>
 
         <TabsContent value="relatorios" className="space-y-6 mt-6">
+          {/* Loading / Error states */}
+          {error && (
+            <Card className="border-destructive/40">
+              <CardHeader>
+                <CardTitle className="text-destructive">Erro</CardTitle>
+                <CardDescription>Não foi possível carregar métricas. <Button size="sm" variant="outline" className="ml-2" onClick={() => setSelectedPeriod(selectedPeriod)}>Tentar novamente</Button></CardDescription>
+              </CardHeader>
+            </Card>
+          )}
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="border-border shadow-sm">
@@ -236,7 +303,7 @@ export default function Relatorios() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{report.totalTickets}</div>
+                <div className="text-2xl font-bold text-foreground">{loading ? <Skeleton className="h-6 w-12 inline-block" /> : (filteredSummary?.totalTickets ?? 0)}</div>
                 <p className="text-xs text-muted-foreground flex items-center mt-1">
                   <TrendingUp className="inline h-3 w-3 mr-1 text-green-600" />
                   +12% vs período anterior
@@ -250,9 +317,13 @@ export default function Relatorios() {
                 <CheckCircle className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-700">{report.resolved}</div>
+                <div className="text-2xl font-bold text-green-700">{loading ? <Skeleton className="h-6 w-10 inline-block" /> : (filteredSummary?.resolved ?? 0)}</div>
                 <p className="text-xs text-muted-foreground">
-                  {Math.round((report.resolved / report.totalTickets) * 100)}% de resolução
+                  {(() => {
+                    if (!filteredSummary || filteredSummary.totalTickets === 0) return '0% de resolução';
+                    const pct = Math.round((filteredSummary.resolved / filteredSummary.totalTickets) * 100);
+                    return `${pct}% de resolução`;
+                  })()}
                 </p>
               </CardContent>
             </Card>
@@ -263,7 +334,7 @@ export default function Relatorios() {
                 <Clock className="h-4 w-4 text-orange-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-700">{report.pending}</div>
+                <div className="text-2xl font-bold text-orange-700">{loading ? <Skeleton className="h-6 w-10 inline-block" /> : (filteredSummary?.pending ?? 0)}</div>
                 <p className="text-xs text-muted-foreground">
                   Aguardando atendimento
                 </p>
@@ -276,7 +347,7 @@ export default function Relatorios() {
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{report.avgResolutionTime}</div>
+                <div className="text-2xl font-bold text-foreground">{loading ? <Skeleton className="h-6 w-14 inline-block" /> : (filteredSummary?.avgResolutionHours != null ? `${filteredSummary.avgResolutionHours} h` : '-')}</div>
                 <p className="text-xs text-muted-foreground">
                   Resolução por ticket
                 </p>
@@ -294,7 +365,12 @@ export default function Relatorios() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(report.departments).map(([dept, count], index) => (
+                {loading && !filteredSummary && (
+                  <div className="space-y-2">
+                    {Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-6 w-full" />))}
+                  </div>
+                )}
+                {!loading && Object.entries(filteredSummary?.departments ?? {}).map(([dept, count], index) => (
                   <div key={dept} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full bg-foreground/30"></div>
@@ -305,7 +381,9 @@ export default function Relatorios() {
                         {count} tickets
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        {Math.round((count / report.totalTickets) * 100)}%
+                        {filteredSummary && filteredSummary.totalTickets > 0
+                          ? `${Math.round((count / filteredSummary.totalTickets) * 100)}%`
+                          : '0%'}
                       </span>
                     </div>
                   </div>
@@ -321,7 +399,12 @@ export default function Relatorios() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(report.priorities).map(([priority, count]) => (
+                {loading && !filteredSummary && (
+                  <div className="space-y-2">
+                    {['Crítica', 'Alta', 'Média', 'Baixa'].map(p => <Skeleton key={p} className="h-6 w-full" />)}
+                  </div>
+                )}
+                {!loading && Object.entries(filteredSummary?.priorities ?? {}).map(([priority, count]) => (
                   <div key={priority} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <AlertCircle className="w-4 h-4 text-muted-foreground" />
@@ -332,7 +415,9 @@ export default function Relatorios() {
                         {count} tickets
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        {Math.round((count / report.totalTickets) * 100)}%
+                        {filteredSummary && filteredSummary.totalTickets > 0
+                          ? `${Math.round((count / filteredSummary.totalTickets) * 100)}%`
+                          : '0%'}
                       </span>
                     </div>
                   </div>

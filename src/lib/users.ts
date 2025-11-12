@@ -44,6 +44,29 @@ export async function listUsers(params?: { page?: number; pageSize?: number; q?:
     return res.data.data;
 }
 
+/**
+ * Conta usuários ativos.
+ * Estratégia: paginação progressiva enquanto houver páginas a percorrer ou até atingir limite de segurança.
+ * Usa pageSize grande para reduzir chamadas. Se backend crescer muito, migrar para endpoint dedicado.
+ */
+export async function countActiveUsers(): Promise<number> {
+    let page = 1;
+    const pageSize = 100;
+    let totalActive = 0;
+    let total = 0;
+    const SAFETY_MAX_PAGES = 20; // evita loops infinitos
+    while (page <= SAFETY_MAX_PAGES) {
+        const res = await api.get<ApiListResponse<ApiUser>>("/users", { params: { page, pageSize } });
+        const data = res.data.data;
+        if (page === 1) total = data.total;
+        totalActive += data.items.filter(u => u.isActive).length;
+        const fetched = page * pageSize;
+        if (fetched >= total) break;
+        page++;
+    }
+    return totalActive;
+}
+
 /** Lista apenas usuários do tipo Customer. */
 export async function listCustomers(params?: { page?: number; pageSize?: number; q?: string }) {
     const page = params?.page ?? 1;

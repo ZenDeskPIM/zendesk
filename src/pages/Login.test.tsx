@@ -7,8 +7,8 @@ import { I18nProvider } from '@/i18n/provider'
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: () => { } }) }))
 vi.mock('@/hooks/use-auth-hook', () => ({ useAuth: () => ({ login: async () => true }) }))
 vi.mock('react-router-dom', async (orig) => {
-    const actual: any = await orig()
-    return { ...actual, useNavigate: () => () => { } }
+    const actual: Record<string, unknown> = await orig()
+    return { ...actual, useNavigate: () => () => { /* noop navigate mock */ } }
 })
 
 describe('Login page smoke', () => {

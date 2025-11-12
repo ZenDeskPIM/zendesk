@@ -18,16 +18,17 @@ namespace TicketSystem.API.Models.DTOs
         public bool IsOverdue { get; set; }
         public int? SlaHours { get; set; }
         public int MessageCount { get; set; }
-    }
-
-    public class TicketDetailDto : TicketSummaryDto
-    {
-        public string Description { get; set; } = string.Empty;
+        // NOVO: métricas básicas para lista sem precisar chamar detalhe
         public double? ResolutionTimeHours { get; set; }
         public double? FirstResponseTimeHours { get; set; }
         public DateTime? FirstResponseAt { get; set; }
         public DateTime? ResolvedAt { get; set; }
         public DateTime? ClosedAt { get; set; }
+    }
+
+    public class TicketDetailDto : TicketSummaryDto
+    {
+        public string Description { get; set; } = string.Empty;
         public int? CustomerRating { get; set; }
         public string? CustomerFeedback { get; set; }
         public List<MessageDto> Messages { get; set; } = new();

@@ -17,17 +17,17 @@ namespace TicketSystem.API.Controllers
             _ai = ai;
         }
 
-        // POST /api/ai/analyze
+        /// <summary>
+        /// Analisa título e descrição do ticket via serviço de IA (Gemini se configurado; fallback heurístico).
+        /// </summary>
         [HttpPost("analyze")]
         [Authorize]
-        public async Task<IActionResult> Analyze([FromBody] AiAnalyzeRequest request, CancellationToken ct)
+        public async Task<IActionResult> Analyze([FromBody] AiAnalyzeRequest req, CancellationToken ct)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(new { Message = "Dados inválidos" });
-            }
 
-            var result = await _ai.AnalyzeAsync(request, ct);
+            var result = await _ai.AnalyzeAsync(req, ct);
             return Ok(new { Message = "Análise concluída", Data = result });
         }
     }

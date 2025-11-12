@@ -47,7 +47,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     const value: I18nContextType = useMemo(() => ({
         locale,
         setLocale: (l) => {
-            try { localStorage.setItem('locale', l) } catch { }
+            try { localStorage.setItem('locale', l) } catch (e) { /* ignore persistence errors (Safari private / SSR) */ }
             setLocale(l)
         },
         t: (key, params) => {

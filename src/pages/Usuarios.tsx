@@ -125,6 +125,7 @@ export default function Usuarios() {
   // Carregamento inicial e alterações nos filtros de visualização
   useEffect(() => {
     fetchUsers();
+    // Dependências suprimidas intencionalmente: funções estáveis pelo escopo do componente.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 
@@ -135,6 +136,7 @@ export default function Usuarios() {
       fetchUsers(q.length > 0 ? q : undefined);
     }, 300);
     return () => clearTimeout(h);
+    // Dependências suprimidas intencionalmente (fetchUsers estável no ciclo de vida atual)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
@@ -156,7 +158,7 @@ export default function Usuarios() {
       }
     }, 250);
     return () => clearTimeout(h);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Dependências suprimidas intencionalmente (listUsers/listCustomers não variam)
   }, [searchTerm]);
 
   const filteredUsuarios = useMemo(() => {

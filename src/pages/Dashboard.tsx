@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/use-auth-hook";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { countActiveUsers } from "@/lib/users";
 
 // Helpers
 const formatDateTime = (iso?: string) => {
@@ -100,6 +101,30 @@ export default function Dashboard() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeUsers, setActiveUsers] = useState<number | null>(null);
+  const [activeUsersLoading, setActiveUsersLoading] = useState<boolean>(false);
+  const [activeUsersError, setActiveUsersError] = useState<string | null>(null);
+
+  // Carrega e sincroniza contagem de usuários ativos
+  useEffect(() => {
+    if (authLoading) return;
+    let ignore = false;
+    async function load() {
+      setActiveUsersLoading(true);
+      setActiveUsersError(null);
+      try {
+        const n = await countActiveUsers();
+        if (!ignore) setActiveUsers(n);
+      } catch {
+        if (!ignore) setActiveUsersError("Falha ao carregar usuários ativos");
+      } finally {
+        if (!ignore) setActiveUsersLoading(false);
+      }
+    }
+    load();
+    const id = setInterval(load, 60_000); // atualiza a cada 60s
+    return () => { ignore = true; clearInterval(id); };
+  }, [authLoading]);
 
   const sortedTickets = useMemo(() =>
     [...tickets].sort((a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime())
@@ -217,9 +242,12 @@ export default function Dashboard() {
             <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg md:text-xl lg:text-2xl font-bold text-primary">45</div>
+            <div className="text-lg md:text-xl lg:text-2xl font-bold text-primary">
+              {activeUsersLoading && <span className="animate-pulse">...</span>}
+              {!activeUsersLoading && (activeUsers ?? "-")}
+            </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Conectados agora
+              {activeUsersError ? activeUsersError : "Conectados agora"}
             </p>
           </CardContent>
         </Card>

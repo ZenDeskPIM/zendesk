@@ -25,7 +25,7 @@ describe('Usuarios page smoke', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         // Force PT locale for deterministic assertions
-        try { localStorage.setItem('locale', 'pt') } catch { }
+        try { localStorage.setItem('locale', 'pt') } catch (e) { /* ignore localStorage unavailability */ }
     })
 
     it('renders filters with counters and search input', async () => {
