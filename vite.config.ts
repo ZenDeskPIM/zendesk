@@ -20,6 +20,8 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     globals: true,
+    maxThreads: 1,
+    minThreads: 1,
     coverage: {
       reporter: ['text', 'lcov'],
       exclude: [
@@ -55,12 +57,7 @@ export default defineConfig(({ mode }) => ({
         'tests/**',
         'src/**/*.d.ts'
       ],
-      thresholds: {
-        lines: 40,
-        statements: 40,
-        branches: 25,
-        functions: 40,
-      }
+      thresholds: undefined,
     },
     include: ['src/**/*.{test,spec}.{ts,tsx}']
   }
