@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Mail, UserCheck } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth-hook";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function Login() {
     if (ok) {
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao Sistema HelpDesk",
+        description: "Bem-vindo ao ZenTicket",
       });
       navigate('/dashboard');
     } else {
@@ -72,13 +73,13 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 p-3 md:p-4">
       <Card className="w-full max-w-sm md:max-w-md">
         <CardHeader className="text-center space-y-4 p-4 md:p-6">
-          <div className="mx-auto w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center">
-            <UserCheck className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+          <div className="mx-auto w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <BrandLogo className="h-7 w-7 md:h-8 md:w-8 text-primary" title="ZenTicket" />
           </div>
           <div>
-            <CardTitle className="text-xl md:text-2xl font-bold">Sistema HelpDesk</CardTitle>
+            <CardTitle className="text-xl md:text-2xl font-bold">ZenTicket</CardTitle>
             <CardDescription className="text-sm md:text-base text-muted-foreground">
-              Faça login para acessar o sistema
+              Faça login para acessar o seu hub de suporte
             </CardDescription>
           </div>
         </CardHeader>

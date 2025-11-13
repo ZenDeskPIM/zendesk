@@ -24,6 +24,7 @@ import {
   Filter
 } from "lucide-react";
 import heroImage from "@/assets/helpdesk-hero.jpg";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { useTickets, Ticket } from "@/hooks/use-tickets";
 import { listTickets } from "@/lib/tickets";
 import { useAuth } from "@/hooks/use-auth-hook";
@@ -173,15 +174,20 @@ export default function Dashboard() {
         <div className="absolute inset-0">
           <img
             src={heroImage}
-            alt="HelpDesk Professional"
+            alt="ZenTicket Command Center"
             className="w-full h-full object-cover opacity-20"
           />
         </div>
         <div className="relative p-4 md:p-6 lg:p-8">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">Central de HelpDesk</h1>
-          <p className="text-sm md:text-base lg:text-lg opacity-90 mb-4 md:mb-6">
-            Gerencie todos os tickets de suporte da sua empresa de forma eficiente
-          </p>
+          <div className="flex items-start gap-3 mb-4">
+            <BrandLogo className="hidden sm:block h-10 w-10 text-white" title="ZenTicket" />
+            <div>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">ZenTicket Command Center</h1>
+              <p className="text-sm md:text-base lg:text-lg opacity-90">
+                Gerencie todos os tickets de suporte da sua empresa de forma eficiente
+              </p>
+            </div>
+          </div>
           <Button
             size="lg"
             variant="secondary"

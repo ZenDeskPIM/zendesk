@@ -96,6 +96,7 @@ export default function NovoTicket() {
   const [departments, setDepartments] = useState<Dept[]>([]);
   const [departmentId, setDepartmentId] = useState<number | null>(null);
   const [manualDepartmentSelection, setManualDepartmentSelection] = useState(false);
+  const [autoDepartmentSuggestion, setAutoDepartmentSuggestion] = useState<Dept | null>(null);
   const [customers, setCustomers] = useState<ApiUser[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { user: authUser } = useAuth();
@@ -127,12 +128,36 @@ export default function NovoTicket() {
   }, [formData]);
 
   useEffect(() => {
-    if (!departments.length || manualDepartmentSelection) return;
-    if (!formData.title && !formData.description) return;
+    if (!departments.length) {
+      if (autoDepartmentSuggestion) setAutoDepartmentSuggestion(null);
+      return;
+    }
+
+    if (!formData.title && !formData.description) {
+      if (!manualDepartmentSelection && departmentId !== null) {
+        setDepartmentId(null);
+        setFormData((prev) => ({ ...prev, department: "" }));
+      }
+      if (autoDepartmentSuggestion) setAutoDepartmentSuggestion(null);
+      return;
+    }
 
     const guess = guessDepartmentFromText(formData.title, formData.description, departments);
-    if (!guess) return;
-    if (departmentId === guess.id) return;
+
+    if (!guess) {
+      if (!manualDepartmentSelection && departmentId !== null) {
+        setDepartmentId(null);
+        setFormData((prev) => ({ ...prev, department: "" }));
+      }
+      if (autoDepartmentSuggestion) setAutoDepartmentSuggestion(null);
+      return;
+    }
+
+    if (!autoDepartmentSuggestion || autoDepartmentSuggestion.id !== guess.id) {
+      setAutoDepartmentSuggestion(guess);
+    }
+
+    if (manualDepartmentSelection || departmentId === guess.id) return;
 
     setDepartmentId(guess.id);
     setFormData((prev) => ({ ...prev, department: guess.name }));
@@ -141,7 +166,7 @@ export default function NovoTicket() {
       const { department: _department, ...rest } = prev;
       return rest;
     });
-  }, [departments, departmentId, formData.description, formData.title, manualDepartmentSelection]);
+  }, [autoDepartmentSuggestion, departments, departmentId, formData.description, formData.title, manualDepartmentSelection]);
 
   // Calculate form completion progress
   useEffect(() => {
@@ -149,6 +174,18 @@ export default function NovoTicket() {
     const completedFields = requiredFields.filter(field => formData[field as keyof typeof formData]);
     setProgress((completedFields.length / requiredFields.length) * 100);
   }, [formData]);
+
+  const applySuggestedDepartment = () => {
+    if (!autoDepartmentSuggestion) return;
+    setManualDepartmentSelection(false);
+    setDepartmentId(autoDepartmentSuggestion.id);
+    setFormData((prev) => ({ ...prev, department: autoDepartmentSuggestion.name }));
+    setErrors((prev) => {
+      if (!prev.department) return prev;
+      const { department: _department, ...rest } = prev;
+      return rest;
+    });
+  };
 
   // Load departments and set user display
   useEffect(() => {
@@ -360,6 +397,7 @@ export default function NovoTicket() {
       });
       setDepartmentId(null);
       setManualDepartmentSelection(false);
+      setAutoDepartmentSuggestion(null);
       setShowSuggestions(false);
       setErrors({});
 
@@ -389,6 +427,7 @@ export default function NovoTicket() {
     });
     setDepartmentId(null);
     setManualDepartmentSelection(false);
+    setAutoDepartmentSuggestion(null);
     setErrors({});
     setShowSuggestions(false);
     toast({
@@ -520,6 +559,25 @@ export default function NovoTicket() {
                       </Select>
                       {errors.department && (
                         <p className="text-sm text-destructive">{errors.department}</p>
+                      )}
+                      {autoDepartmentSuggestion && (
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-muted-foreground mt-2">
+                          <span>
+                            {manualDepartmentSelection && departmentId !== autoDepartmentSuggestion.id
+                              ? `Sugestao de setor: ${autoDepartmentSuggestion.name}`
+                              : `Setor sugerido: ${autoDepartmentSuggestion.name} (com base no texto)`}
+                          </span>
+                          {manualDepartmentSelection && departmentId !== autoDepartmentSuggestion.id && (
+                            <Button
+                              type="button"
+                              variant="link"
+                              className="h-auto px-0 text-xs"
+                              onClick={applySuggestedDepartment}
+                            >
+                              Usar sugestao
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>

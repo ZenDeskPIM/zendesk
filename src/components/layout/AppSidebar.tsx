@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth-hook";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 import {
   Sidebar,
@@ -62,10 +63,12 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r bg-card">
       <SidebarContent className="p-4">
-        <div className="mb-6">
-          <h2 className="font-bold text-lg text-primary">
-            HelpDesk Pro
-          </h2>
+        <div className="mb-6 flex items-center gap-3">
+          <BrandLogo className="h-8 w-8 text-primary" title="ZenTicket" />
+          <div>
+            <h2 className="font-bold text-lg text-primary">ZenTicket</h2>
+            <p className="text-xs text-muted-foreground">Suporte sem atrito</p>
+          </div>
         </div>
 
         <SidebarGroup>

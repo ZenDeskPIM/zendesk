@@ -28,6 +28,7 @@ import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useAuth } from "@/hooks/use-auth-hook";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 /** Mapeamento simples de path -> nome de rota para breadcrumbs */
 const routeNames: Record<string, string> = {
@@ -161,7 +162,8 @@ export function Header() {
           <div className="flex items-center gap-2 md:gap-4 min-w-0">
             <SidebarTrigger className="h-8 w-8 flex-shrink-0" />
             <div className="flex items-center gap-2 min-w-0">
-              <div className="font-semibold text-primary text-sm md:text-base truncate">Sistema HelpDesk</div>
+              <BrandLogo className="h-6 w-6 flex-shrink-0 text-primary" title="ZenTicket" />
+              <div className="font-semibold text-primary text-sm md:text-base truncate">ZenTicket</div>
               <div className="text-xs md:text-sm text-muted-foreground hidden sm:block">v1.0</div>
             </div>
 

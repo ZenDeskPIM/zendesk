@@ -29,6 +29,7 @@ import {
   Mail,
   Clock
 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 export default function Configuracoes() {
   const { toast } = useToast();
@@ -69,11 +70,11 @@ export default function Configuracoes() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Settings className="h-8 w-8 text-primary" />
+        <BrandLogo className="h-10 w-10 text-primary" title="ZenTicket" />
         <div>
-          <h1 className="text-3xl font-bold">Configurações</h1>
+          <h1 className="text-3xl font-bold">Configurações ZenTicket</h1>
           <p className="text-muted-foreground">
-            Gerencie as configurações do sistema HelpDesk
+            Gerencie as configurações centrais da plataforma
           </p>
         </div>
       </div>
