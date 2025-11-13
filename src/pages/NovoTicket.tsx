@@ -30,6 +30,7 @@ import { CreateTicketInput } from "@/lib/tickets";
 import { useTickets } from "@/hooks/use-tickets";
 import { useAuth } from "@/hooks/use-auth-hook";
 import { analyzeTicket } from "@/lib/ai";
+import { guessDepartmentFromText } from "@/lib/department-heuristics";
 
 const categories = [
   { value: "hardware", label: "Hardware", description: "Problemas com equipamentos físicos" },
@@ -94,6 +95,7 @@ export default function NovoTicket() {
   });
   const [departments, setDepartments] = useState<Dept[]>([]);
   const [departmentId, setDepartmentId] = useState<number | null>(null);
+  const [manualDepartmentSelection, setManualDepartmentSelection] = useState(false);
   const [customers, setCustomers] = useState<ApiUser[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { user: authUser } = useAuth();
@@ -123,6 +125,23 @@ export default function NovoTicket() {
       localStorage.setItem('ticket-draft', JSON.stringify(formData));
     }
   }, [formData]);
+
+  useEffect(() => {
+    if (!departments.length || manualDepartmentSelection) return;
+    if (!formData.title && !formData.description) return;
+
+    const guess = guessDepartmentFromText(formData.title, formData.description, departments);
+    if (!guess) return;
+    if (departmentId === guess.id) return;
+
+    setDepartmentId(guess.id);
+    setFormData((prev) => ({ ...prev, department: guess.name }));
+    setErrors((prev) => {
+      if (!prev.department) return prev;
+      const { department: _department, ...rest } = prev;
+      return rest;
+    });
+  }, [departments, departmentId, formData.description, formData.title, manualDepartmentSelection]);
 
   // Calculate form completion progress
   useEffect(() => {
@@ -339,6 +358,8 @@ export default function NovoTicket() {
         email: "",
 
       });
+      setDepartmentId(null);
+      setManualDepartmentSelection(false);
       setShowSuggestions(false);
       setErrors({});
 
@@ -366,6 +387,8 @@ export default function NovoTicket() {
       email: "",
 
     });
+    setDepartmentId(null);
+    setManualDepartmentSelection(false);
     setErrors({});
     setShowSuggestions(false);
     toast({
@@ -473,9 +496,15 @@ export default function NovoTicket() {
                         value={departmentId ? String(departmentId) : ""}
                         onValueChange={(value) => {
                           const id = Number(value);
+                          setManualDepartmentSelection(true);
                           setDepartmentId(id);
                           const name = departments.find(d => d.id === id)?.name ?? "";
-                          setFormData({ ...formData, department: name });
+                          setFormData((prev) => ({ ...prev, department: name }));
+                          setErrors((prev) => {
+                            if (!prev.department) return prev;
+                            const { department: _department, ...rest } = prev;
+                            return rest;
+                          });
                         }}
                       >
                         <SelectTrigger id="department" className={`text-sm ${errors.department ? 'border-destructive' : ''}`}>
