@@ -19,9 +19,10 @@ namespace TicketSystem.API.Services
             if (!context.Departments.Any())
             {
                 context.Departments.AddRange(
-                    new Department { Name = "Suporte Técnico", Description = "Problemas técnicos e bugs", Color = "#FF6B6B", IsActive = true, CreatedAt = DateTime.UtcNow },
-                    new Department { Name = "Financeiro", Description = "Pagamentos e faturamento", Color = "#4ECDC4", IsActive = true, CreatedAt = DateTime.UtcNow },
-                    new Department { Name = "Comercial", Description = "Produtos e vendas", Color = "#45B7D1", IsActive = true, CreatedAt = DateTime.UtcNow }
+                    new Department { Name = "Financeiro", Description = "Pagamentos, faturamento e orçamento", Color = "#4ECDC4", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Department { Name = "RH", Description = "Admissão, folha e benefícios", Color = "#55EFC4", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Department { Name = "Produção", Description = "PCP, logística interna e chão de fábrica", Color = "#00CEC9", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Department { Name = "T.I", Description = "Suporte técnico, sistemas e infraestrutura", Color = "#6C5CE7", IsActive = true, CreatedAt = DateTime.UtcNow }
                 );
                 context.SaveChanges();
                 logger.LogInformation("Departamentos inseridos pelo DatabaseSeeder.");

@@ -16,17 +16,7 @@ Este documento reúne informações extraídas do projeto a partir dos arquivos 
 
     ```text
     ConnectionStrings__DefaultConnection="Server=localhost;Database=TicketSystemDB;Integrated Security=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
-    ```sql
-    -- Remover duplicata com caractere inválido caso exista (mantém o nome correto)
-    IF EXISTS (SELECT 1
-        FROM Departments
-        WHERE Name = 'Suporte Técnico')
-        AND EXISTS (SELECT 1
-        FROM Departments
-        WHERE Name = N'Suporte Técnico')
-    BEGIN
-        DELETE FROM Departments WHERE Name = 'Suporte Técnico';
-    END
+    ```
   - O projeto suporta execução local (conexão direta com o SQL Server na máquina ou via container) e pode ser apontado para um DB em nuvem alterando a connection string.
   - Arquivos de ambiente recomendados: copie `.env.local.example` para `.env.local` e ajuste a variável `ConnectionStrings__DefaultConnection`.
   - A documentação do projeto (`docs/LOCAL-SETUP.md`) descreve como rodar um container SQL Server e a string de conexão sugerida (`Server=127.0.0.1,1433;Database=TicketSystemDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;`).
@@ -38,43 +28,54 @@ O projeto contém dois arquivos SQL importantes para preparar/limpar o banco:
 - `seed-data.sql` — insere departamentos (idempotente). O usuário admin é criado pelo app na inicialização:
 
 ```sql
--- Remover duplicata com caractere inválido caso exista (mantém o nome correto)
-IF EXISTS (SELECT 1
-    FROM Departments
-    WHERE Name = 'Suporte Técnico')
-    AND EXISTS (SELECT 1
-    FROM Departments
-    WHERE Name = N'Suporte Técnico')
+-- Cria os departamentos oficiais (idempotente)
+IF NOT EXISTS (SELECT 1 FROM Departments WHERE Name = N'Financeiro')
+    INSERT INTO Departments (Name, Description, Color, IsActive, CreatedAt, IsDeleted)
+    VALUES (N'Financeiro', N'Pagamentos, faturamento e orçamento', N'#4ECDC4', 1, GETUTCDATE(), 0);
+
+IF NOT EXISTS (SELECT 1 FROM Departments WHERE Name = N'RH')
+    INSERT INTO Departments (Name, Description, Color, IsActive, CreatedAt, IsDeleted)
+    VALUES (N'RH', N'Admissão, folha, benefícios e suporte ao colaborador', N'#55EFC4', 1, GETUTCDATE(), 0);
+
+IF NOT EXISTS (SELECT 1 FROM Departments WHERE Name = N'Produção')
+    INSERT INTO Departments (Name, Description, Color, IsActive, CreatedAt, IsDeleted)
+    VALUES (N'Produção', N'PCP, logística interna e chão de fábrica', N'#00CEC9', 1, GETUTCDATE(), 0);
+
+IF NOT EXISTS (SELECT 1 FROM Departments WHERE Name = N'T.I')
+    INSERT INTO Departments (Name, Description, Color, IsActive, CreatedAt, IsDeleted)
+    VALUES (N'T.I', N'Suporte técnico, sistemas e infraestrutura', N'#6C5CE7', 1, GETUTCDATE(), 0);
+
+-- Migra tickets que apontam para departamentos obsoletos para T.I (fallback) e remove os demais
+DECLARE @fallbackDepartmentId INT = (SELECT TOP 1 Id FROM Departments WHERE Name = N'T.I');
+IF @fallbackDepartmentId IS NULL
+    SELECT @fallbackDepartmentId = Id FROM Departments WHERE Name = N'Financeiro';
+
+IF @fallbackDepartmentId IS NOT NULL
 BEGIN
-    DELETE FROM Departments WHERE Name = 'Suporte Técnico';
+    UPDATE Tickets
+    SET DepartmentId = @fallbackDepartmentId
+    WHERE DepartmentId IN (
+        SELECT d.Id
+        FROM Departments d
+        WHERE d.Name NOT IN (N'Financeiro', N'RH', N'Produção', N'T.I')
+    );
+
+    DELETE FROM Departments
+    WHERE Name NOT IN (N'Financeiro', N'RH', N'Produção', N'T.I');
 END
 
--- Índice único para prevenir duplicatas de nome
+-- Índice único para prevenir duplicatas de nome (garantia pós-limpeza)
 IF NOT EXISTS (
     SELECT 1
-FROM sys.indexes
-WHERE name = 'UX_Departments_Name' AND object_id = OBJECT_ID('dbo.Departments')
+    FROM sys.indexes
+    WHERE name = 'UX_Departments_Name' AND object_id = OBJECT_ID('dbo.Departments')
 )
 BEGIN
     CREATE UNIQUE INDEX UX_Departments_Name ON dbo.Departments(Name);
 END
 
--- Inserir Departamentos (idempotente, usando literais Unicode N'...')
-IF NOT EXISTS (SELECT 1
-FROM Departments
-WHERE Name = N'Suporte Técnico')
-BEGIN
-    INSERT INTO Departments
-        (Name, Description, Color, IsActive, CreatedAt, IsDeleted)
-    VALUES
-        (N'Suporte Técnico', N'Problemas técnicos e bugs', N'#FF6B6B', 1, GETUTCDATE(), 0);
-END
-
--- (o arquivo continua inserindo outros departamentos...)
-
 -- Observação: o admin (admin@ticketsystem.com / admin123) é criado em runtime
 -- pelo DatabaseSeeder.Seed (Program.cs), para garantir hash BCrypt consistente.
-
 ```
 
 - `reset-to-seed.sql` — limpa dados de runtime (tickets, messages, usuários não-admin) e reseeda identity:

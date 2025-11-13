@@ -19,7 +19,7 @@ export interface Ticket {
   categoria: string;
   subcategoria?: string;
   usuario: string;
-  departamento: string; // Ex.: "TI", "Financeiro", "RH", "Operações"
+  departamento: string; // Ex.: "Financeiro", "RH", "Produção", "T.I"
   dataCriacao: string; // ISO string
   dataAtualizacao: string; // ISO string
   slaVencimento?: string; // ISO string

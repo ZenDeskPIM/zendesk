@@ -136,7 +136,7 @@ export default function Relatorios() {
       base = buildLocalSummary(inWindow, summary.period);
     }
     if (selectedDepartment === 'todos') return base;
-    const deptNameMap: Record<string, string> = { ti: 'TI', financeiro: 'Financeiro', rh: 'RH', operacoes: 'Operações' };
+    const deptNameMap: Record<string, string> = { ti: 'T.I', financeiro: 'Financeiro', rh: 'RH', producao: 'Produção' };
     const target = deptNameMap[selectedDepartment] ?? selectedDepartment;
     const deptCount = base.departments[target] ?? 0;
     const detailed = base.departmentsDetailed?.find(d => d.department === target);
@@ -179,7 +179,7 @@ export default function Relatorios() {
   // Filter tickets based on department
   const getFilteredTickets = () => {
     if (selectedDepartment === "todos") return tickets;
-    const map: Record<string, string> = { ti: "TI", financeiro: "Financeiro", rh: "RH", operacoes: "Operações" };
+    const map: Record<string, string> = { ti: "T.I", financeiro: "Financeiro", rh: "RH", producao: "Produção" };
     const deptName = map[selectedDepartment as keyof typeof map];
     return tickets.filter(ticket => ticket.departamento === deptName);
   };
@@ -265,10 +265,10 @@ export default function Relatorios() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos Setores</SelectItem>
-              <SelectItem value="ti">TI</SelectItem>
+              <SelectItem value="ti">T.I</SelectItem>
               <SelectItem value="financeiro">Financeiro</SelectItem>
               <SelectItem value="rh">RH</SelectItem>
-              <SelectItem value="operacoes">Operações</SelectItem>
+              <SelectItem value="producao">Produção</SelectItem>
             </SelectContent>
           </Select>
 

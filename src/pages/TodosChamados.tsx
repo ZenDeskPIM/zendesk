@@ -226,12 +226,10 @@ export default function TodosChamados() {
               triggerClassName="lg:w-[200px]"
               options={[
                 { value: "todos", label: "Todos os Departamentos" },
-                { value: "TI", label: "TI" },
                 { value: "Financeiro", label: "Financeiro" },
                 { value: "RH", label: "RH" },
-                { value: "Operações", label: "Operações" },
-                { value: "Marketing", label: "Marketing" },
-                { value: "Vendas", label: "Vendas" },
+                { value: "Produção", label: "Produção" },
+                { value: "T.I", label: "T.I" },
               ]}
             />
           </div>

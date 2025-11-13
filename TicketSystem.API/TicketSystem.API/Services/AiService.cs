@@ -308,22 +308,32 @@ namespace TicketSystem.API.Services
                 int score = 0;
                 var name = d.Name.ToLowerInvariant();
                 var desc = (d.Description ?? string.Empty).ToLowerInvariant();
-                if (text.Contains("fatura") || text.Contains("pagamento") || text.Contains("boleto") || text.Contains("nota fiscal"))
+
+                if (text.Contains("fatura") || text.Contains("pagamento") || text.Contains("boleto") || text.Contains("nota fiscal") || text.Contains("cobrança") || text.Contains("orcamento") || text.Contains("orçamento"))
                 {
                     if (name.Contains("finance") || desc.Contains("finance")) score += 3;
                 }
-                if (text.Contains("venda") || text.Contains("cliente") || text.Contains("pedido") || text.Contains("comercial"))
+
+                if (text.Contains("folha") || text.Contains("beneficio") || text.Contains("benefício") || text.Contains("ferias") || text.Contains("férias") || text.Contains("admissao") || text.Contains("admissão") || text.Contains("demissao") || text.Contains("demissão") || text.Contains("colaborador"))
                 {
-                    if (name.Contains("comercial") || name.Contains("vendas") || desc.Contains("comercial")) score += 3;
+                    if (name.Contains("rh") || desc.Contains("recursos humanos") || desc.Contains("folha")) score += 3;
                 }
-                if (text.Contains("rede") || text.Contains("sistema") || text.Contains("ti") || text.Contains("bug") || text.Contains("impressora"))
+
+                if (text.Contains("producao") || text.Contains("produção") || text.Contains("maquina") || text.Contains("máquina") || text.Contains("linha") || text.Contains("pcp") || text.Contains("estoque") || text.Contains("logistica") || text.Contains("logística"))
                 {
-                    if (name.Contains("suporte") || name.Contains("técnico") || desc.Contains("bug")) score += 3;
+                    if (name.Contains("produ") || desc.Contains("produção") || desc.Contains("pcp")) score += 3;
                 }
-                if (text.Contains("mouse") || text.Contains("teclado") || text.Contains("periferico") || text.Contains("periférico"))
+
+                if (text.Contains("rede") || text.Contains("sistema") || text.Contains("ti") || text.Contains("bug") || text.Contains("erro") || text.Contains("impressora") || text.Contains("computador") || text.Contains("acesso") || text.Contains("vpn") || text.Contains("servidor"))
                 {
-                    if (name.Contains("suporte") || name.Contains("técnico") || desc.Contains("técnico")) score += 2;
+                    if (name.Contains("t.i") || name.Contains("ti") || desc.Contains("suporte") || desc.Contains("infraestrutura") || desc.Contains("sistemas")) score += 3;
                 }
+
+                if (text.Contains("mouse") || text.Contains("teclado") || text.Contains("periferico") || text.Contains("periférico") || text.Contains("notebook") || text.Contains("desktop"))
+                {
+                    if (name.Contains("t.i") || name.Contains("ti") || desc.Contains("suporte")) score += 2;
+                }
+
                 if (score > 0) depScore[d.Id] = depScore.GetValueOrDefault(d.Id) + score;
             }
 

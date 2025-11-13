@@ -178,12 +178,10 @@ export default function PesquisarTickets() {
               title="Selecionar departamento"
               options={[
                 { value: "todos", label: "Todos os Departamentos" },
-                { value: "TI", label: "TI" },
                 { value: "Financeiro", label: "Financeiro" },
                 { value: "RH", label: "RH" },
-                { value: "Operações", label: "Operações" },
-                { value: "Marketing", label: "Marketing" },
-                { value: "Vendas", label: "Vendas" },
+                { value: "Produção", label: "Produção" },
+                { value: "T.I", label: "T.I" },
               ]}
             />
           </div>

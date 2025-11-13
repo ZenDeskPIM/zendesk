@@ -454,7 +454,7 @@ export default function VisualizarTicket() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="idChamado">ID do Chamado</Label>
+                <Label htmlFor="idChamado">Protocolo</Label>
                 <Input
                   id="idChamado"
                   value={ticket.id}

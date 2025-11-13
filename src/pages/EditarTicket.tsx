@@ -261,7 +261,7 @@ export default function EditarTicket() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium">ID do Chamado</Label>
+                  <Label className="text-sm font-medium">Protocolo</Label>
                   <p className="text-sm text-muted-foreground">{ticket.id}</p>
                 </div>
 

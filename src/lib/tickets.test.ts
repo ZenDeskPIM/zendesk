@@ -10,7 +10,7 @@ describe('mapApiTicketToStore', () => {
       subject: 'Printer not working',
       status: 'Open',
       priority: 'High',
-      department: 'Suporte Técnico',
+      department: 'T.I',
       customer: 'João',
       assignedAgent: 'Maria',
       createdAt: now,
@@ -25,7 +25,7 @@ describe('mapApiTicketToStore', () => {
     expect(store.status).toBe('Aberto');
     expect(store.prioridade).toBe('Alta');
     expect(store.usuario).toBe('João');
-    expect(store.departamento).toBe('Suporte Técnico');
+    expect(store.departamento).toBe('T.I');
     expect(store.slaVencimento).toBeTruthy();
   });
 });
