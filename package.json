@@ -13,6 +13,8 @@
     "adb:reverse:clear": "adb reverse --remove-all",
     "android:build": "npm run build:android && npx cap sync android",
     "android:apk": "npm run android:build && cd android && gradlew.bat assembleDebug",
+    "android:build:release": "npm run android:build && cd android && gradlew.bat assembleRelease",
+    "android:bundle": "npm run android:build && cd android && gradlew.bat bundleRelease",
     "android:install": "adb install -r android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
     "android:run": "npm run android:apk && npm run android:install",
     "android:dev": "concurrently -k \"npm:api:dev\" \"npm:adb:reverse\" \"npm run android:run\"",
@@ -21,7 +23,9 @@
     "test:coverage": "vitest run --coverage",
     "preview": "vite preview",
     "build:android": "vite build --mode android",
-    "android:sync": "npm run android:build && npx cap sync android"
+    "android:sync": "npm run android:build && npx cap sync android",
+    "electron:dev": "concurrently \"npm run dev:web\" \"cross-env NODE_ENV=development electron .\"",
+    "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -125,6 +129,7 @@
       "dist/**/*",
       "electron/**/*"
     ],
+    "artifactName": "HelpDeskUNIP-${version}-${os}-${arch}.${ext}",
     "extraMetadata": {
       "main": "electron/main.js"
     },
