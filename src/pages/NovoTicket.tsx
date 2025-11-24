@@ -309,7 +309,7 @@ export default function NovoTicket() {
   };
 
   const handleDescriptionChange = (value: string) => {
-    setFormData({ ...formData, description: value });
+    setFormData((prev) => ({ ...prev, description: value }));
   };
 
   const priorityToApi: Record<string, "Urgent" | "High" | "Normal" | "Low"> = {
@@ -598,7 +598,7 @@ export default function NovoTicket() {
                       id="title"
                       placeholder="Ex: Impressora não está funcionando"
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                       className={errors.title ? 'border-destructive' : ''}
                       required
                     />
@@ -622,7 +622,7 @@ export default function NovoTicket() {
                       </Label>
                       <Select
                         value={formData.category}
-                        onValueChange={(value) => setFormData({ ...formData, category: value })}
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
                       >
                         <SelectTrigger id="category" className={`text-sm justify-between text-left ${errors.category ? 'border-destructive' : ''}`}>
                           <SelectValue placeholder="Selecione a categoria" />
@@ -662,7 +662,7 @@ export default function NovoTicket() {
                       </Label>
                       <Select
                         value={formData.priority}
-                        onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, priority: value }))}
                       >
                         <SelectTrigger id="priority" className={`text-sm justify-between text-left ${errors.priority ? 'border-destructive' : ''}`}>
                           <SelectValue placeholder="Selecione a prioridade" />
@@ -749,7 +749,7 @@ export default function NovoTicket() {
                         type="email"
                         placeholder="seu.email@empresa.com"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                         className={errors.email ? 'border-destructive' : ''}
                       />
                       {errors.email && (

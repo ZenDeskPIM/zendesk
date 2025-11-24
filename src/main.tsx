@@ -32,6 +32,20 @@ if ('serviceWorker' in navigator) {
 
 // Configure StatusBar for Android so content doesn't go under the system bar
 if (Capacitor.getPlatform() === 'android') {
+    const applyStatusBarFallback = () => {
+        const viewportOffsets = [
+            window.visualViewport?.offsetTop ?? 0,
+            window.visualViewport?.pageTop ?? 0,
+            (window.screen as Screen & { availTop?: number }).availTop ?? 0,
+        ];
+        const measuredInset = Math.max(...viewportOffsets, 0);
+        const isPortrait = window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight >= window.innerWidth;
+        const baseFallback = isPortrait ? 48 : 24;
+        const fallbackPx = Math.max(measuredInset, baseFallback);
+        document.documentElement.style.setProperty('--status-bar-fallback', `${fallbackPx}px`);
+    };
+    const LISTENER_FLAG = '__appStatusBarListenersAttached';
+
     (async () => {
         try {
             await StatusBar.setOverlaysWebView({ overlay: false });
@@ -40,6 +54,14 @@ if (Capacitor.getPlatform() === 'android') {
             await StatusBar.setStyle({ style: StatusBarStyle.Light });
         } catch (e) {
             // ignore if not available
+        }
+
+        // Garantir que o topo respeite a barra de status mesmo se o overlay continuar ativo.
+        applyStatusBarFallback();
+        if (!(window as Record<string, unknown>)[LISTENER_FLAG]) {
+            window.visualViewport?.addEventListener('resize', applyStatusBarFallback);
+            window.addEventListener('orientationchange', applyStatusBarFallback);
+            (window as Record<string, unknown>)[LISTENER_FLAG] = true;
         }
     })();
 }
