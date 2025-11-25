@@ -5,7 +5,15 @@
 import { useCallback } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
-export type TicketStatus = "Aberto" | "Em Andamento" | "Pendente" | "Resolvido" | "Fechado";
+export type TicketStatus =
+  | "Aberto"
+  | "Em Andamento"
+  | "Pendente"
+  | "Aguardando Cliente"
+  | "Aguardando Agente"
+  | "Resolvido"
+  | "Fechado"
+  | "Cancelado";
 export type TicketPrioridade = "Crítica" | "Alta" | "Média" | "Baixa";
 
 export interface Ticket {

@@ -100,6 +100,11 @@ export default function NovoTicket() {
   const [customers, setCustomers] = useState<ApiUser[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { user: authUser } = useAuth();
+  const rawUserType = authUser?.userType;
+  const normalizedUserType = typeof rawUserType === "string" ? rawUserType.toLowerCase() : String(rawUserType ?? "").toLowerCase();
+  const isAgent = normalizedUserType === "agent" || normalizedUserType === "2";
+  const isAdmin = normalizedUserType === "admin" || normalizedUserType === "3";
+  const isStaff = isAgent || isAdmin;
   const { upsertTicketDetail } = useTickets();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -401,7 +406,7 @@ export default function NovoTicket() {
       setShowSuggestions(false);
       setErrors({});
 
-      navigate("/todos-chamados");
+      navigate(isStaff ? "/todos-chamados" : "/meus-tickets");
     } catch (error) {
       toast({
         title: "Erro ao criar ticket",

@@ -51,6 +51,17 @@ function AdminRoute({ children }: { children: React.ReactElement }) {
   return isAdmin ? children : <Navigate to="/dashboard" replace />;
 }
 
+/** Limita acesso a colaboradores (agentes ou administradores) */
+function StaffRoute({ children }: { children: React.ReactElement }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  const raw = user?.userType;
+  const normalized = typeof raw === "string" ? raw.toLowerCase() : String(raw ?? "").toLowerCase();
+  const isAgent = normalized === "agent" || normalized === "2";
+  const isAdmin = normalized === "admin" || normalized === "3";
+  return (isAgent || isAdmin) ? children : <Navigate to="/meus-tickets" replace />;
+}
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
     <QueryClientProvider client={queryClient}>
@@ -113,9 +124,11 @@ const App = () => (
               } />
               <Route path="/todos-chamados" element={
                 <PrivateRoute>
-                  <Layout>
-                    <TodosChamados />
-                  </Layout>
+                  <StaffRoute>
+                    <Layout>
+                      <TodosChamados />
+                    </Layout>
+                  </StaffRoute>
                 </PrivateRoute>
               } />
               <Route path="/usuarios" element={
