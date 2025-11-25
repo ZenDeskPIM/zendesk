@@ -136,14 +136,17 @@ namespace TicketSystem.API.Models.Entities
             return (from, to) switch
             {
                 (TicketStatus.Open, TicketStatus.InProgress) => true,
+                (TicketStatus.Open, TicketStatus.Resolved) => true,
                 (TicketStatus.Open, TicketStatus.Cancelled) => true,
                 (TicketStatus.InProgress, TicketStatus.WaitingCustomer) => true,
                 (TicketStatus.InProgress, TicketStatus.WaitingAgent) => true,
                 (TicketStatus.InProgress, TicketStatus.Resolved) => true,
                 (TicketStatus.InProgress, TicketStatus.Cancelled) => true,
                 (TicketStatus.WaitingCustomer, TicketStatus.InProgress) => true,
+                (TicketStatus.WaitingCustomer, TicketStatus.Resolved) => true,
                 (TicketStatus.WaitingCustomer, TicketStatus.Cancelled) => true,
                 (TicketStatus.WaitingAgent, TicketStatus.InProgress) => true,
+                (TicketStatus.WaitingAgent, TicketStatus.Resolved) => true,
                 (TicketStatus.WaitingAgent, TicketStatus.Cancelled) => true,
                 (TicketStatus.Resolved, TicketStatus.Closed) => true,
                 (TicketStatus.Resolved, TicketStatus.InProgress) => true,
@@ -154,9 +157,9 @@ namespace TicketSystem.API.Models.Entities
 
         public static string GenerateTicketNumber()
         {
-            var year = DateTime.Now.Year;
-            var timestamp = DateTime.Now.ToString("MMddHHmmss");
-            return $"TCK-{year}-{timestamp}";
+            var now = DateTime.UtcNow;
+            var timestamp = now.ToString("yyMMddHHmmssfff");
+            return $"TCK-{timestamp}";
         }
     }
 }

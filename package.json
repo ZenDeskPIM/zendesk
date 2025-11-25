@@ -25,7 +25,8 @@
     "build:android": "vite build --mode android",
     "android:sync": "npm run android:build && npx cap sync android",
     "electron:dev": "concurrently \"npm run dev:web\" \"cross-env NODE_ENV=development electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "api:seed-tickets": "node ./scripts/seed-tickets.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -81,6 +82,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
+    "xlsx": "^0.18.5",
     "zod": "^3.25.76"
   },
   "devDependencies": {

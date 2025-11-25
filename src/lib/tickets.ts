@@ -16,7 +16,7 @@ export type ApiTicketSummary = {
     id: number;
     number: string;
     subject: string;
-    status: "Open" | "InProgress" | "Pending" | "Resolved" | "Closed" | string;
+    status: "Open" | "InProgress" | "Pending" | "WaitingCustomer" | "WaitingAgent" | "Resolved" | "Closed" | "Cancelled" | string;
     priority: "Urgent" | "High" | "Normal" | "Low" | string;
     department: string;
     customer: string;
@@ -65,8 +65,11 @@ const statusMapToPt: Record<string, TicketStatus> = {
     Open: "Aberto",
     InProgress: "Em Andamento",
     Pending: "Pendente",
+    WaitingCustomer: "Aguardando Cliente",
+    WaitingAgent: "Aguardando Agente",
     Resolved: "Resolvido",
     Closed: "Fechado",
+    Cancelled: "Cancelado",
 };
 
 const priorityMapToPt: Record<string, TicketPrioridade> = {
@@ -80,8 +83,11 @@ const statusMapToEn: Record<TicketStatus, string> = {
     "Aberto": "Open",
     "Em Andamento": "InProgress",
     "Pendente": "Pending",
+    "Aguardando Cliente": "WaitingCustomer",
+    "Aguardando Agente": "WaitingAgent",
     "Resolvido": "Resolved",
     "Fechado": "Closed",
+    "Cancelado": "Cancelled",
 };
 
 /** Soma horas a uma data ISO, retornando novo ISO string */
@@ -266,7 +272,7 @@ export async function updateTicketStatusByNumber(number: string, newStatusPt: Ti
     const item = list.data.data.items?.[0];
     if (!item || item.number !== number) throw new Error("Ticket não encontrado");
     const newStatus = statusMapToEn[newStatusPt];
-    await api.put<{ message?: string }>(`/tickets/${item.id}/status`, { newStatus });
+    await api.put<{ message?: string }>(`/tickets/${item.id}/status`, { NewStatus: newStatus });
 }
 
 /** Atribui um ticket (por id interno) a um agente */

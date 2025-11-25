@@ -49,8 +49,11 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user, loading: authLoading } = useAuth();
-  const role = typeof user?.userType === "string" ? user?.userType : String(user?.userType ?? "");
-  const isAdmin = role?.toString().toLowerCase() === "admin" || role === "3";
+  const rawType = user?.userType;
+  const normalizedType = typeof rawType === "string" ? rawType.toLowerCase() : String(rawType ?? "").toLowerCase();
+  const isAdmin = normalizedType === "admin" || normalizedType === "3";
+  const isAgent = normalizedType === "agent" || normalizedType === "2";
+  const isStaff = isAdmin || isAgent;
 
   const isActive = (path: string) => currentPath === path;
 
@@ -77,20 +80,22 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${getNavCls({ isActive })}`}
-                    >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainItems
+                .filter((item) => item.url !== "/todos-chamados" ? true : isStaff)
+                .map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        end
+                        className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${getNavCls({ isActive })}`}
+                      >
+                        <item.icon className="h-4 w-4 flex-shrink-0" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

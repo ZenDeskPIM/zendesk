@@ -70,7 +70,7 @@ export default function Usuarios() {
 
   // Form states separados por tipo
   const [clienteForm, setClienteForm] = useState({ firstName: "", lastName: "", email: "", password: "", status: "Ativo" as "Ativo" | "Inativo", department: "" });
-  const [agenteForm, setAgenteForm] = useState({ firstName: "", lastName: "", email: "", password: "", status: "Ativo" as "Ativo" | "Inativo", specialization: "", level: 1, isAvailable: true });
+  const [agenteForm, setAgenteForm] = useState({ firstName: "", lastName: "", email: "", password: "", status: "Ativo" as "Ativo" | "Inativo", specialization: "", isAvailable: true });
   const [adminForm, setAdminForm] = useState({ firstName: "", lastName: "", email: "", password: "", status: "Ativo" as "Ativo" | "Inativo" });
 
   /**
@@ -175,14 +175,14 @@ export default function Usuarios() {
       if (activeTab === 'cliente') {
         payload = { firstName: clienteForm.firstName, lastName: clienteForm.lastName, email: clienteForm.email, password: clienteForm.password, userType: 'Customer', isActive: clienteForm.status === 'Ativo', department: clienteForm.department || undefined };
       } else if (activeTab === 'agente') {
-        payload = { firstName: agenteForm.firstName, lastName: agenteForm.lastName, email: agenteForm.email, password: agenteForm.password, userType: 'Agent', isActive: agenteForm.status === 'Ativo', specialization: agenteForm.specialization || undefined, level: agenteForm.level || 1, isAvailable: agenteForm.isAvailable };
+        payload = { firstName: agenteForm.firstName, lastName: agenteForm.lastName, email: agenteForm.email, password: agenteForm.password, userType: 'Agent', isActive: agenteForm.status === 'Ativo', specialization: agenteForm.specialization || undefined, isAvailable: agenteForm.isAvailable };
       } else {
         payload = { firstName: adminForm.firstName, lastName: adminForm.lastName, email: adminForm.email, password: adminForm.password, userType: 'Admin', isActive: adminForm.status === 'Ativo' };
       }
       const created = await createUser(payload);
       setUsuarios((prev) => [...prev, mapApiUser(created)]);
       setClienteForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo", department: "" });
-      setAgenteForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo", specialization: "", level: 1, isAvailable: true });
+      setAgenteForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo", specialization: "", isAvailable: true });
       setAdminForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo" });
       toast.success(`Usuário ${created.fullName} foi criado com sucesso.`);
     } catch (err: unknown) {
@@ -206,7 +206,7 @@ export default function Usuarios() {
   const resetForm = () => {
     setEditingUser(null);
     setClienteForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo", department: "" });
-    setAgenteForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo", specialization: "", level: 1, isAvailable: true });
+    setAgenteForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo", specialization: "", isAvailable: true });
     setAdminForm({ firstName: "", lastName: "", email: "", password: "", status: "Ativo" });
     setActiveTab('cliente');
   };
@@ -223,7 +223,7 @@ export default function Usuarios() {
   const isEmail = (v: string) => /.+@.+\..+/.test(v);
   const hasMin = (v: string, n: number) => v.trim().length >= n;
   const clienteValid = hasMin(clienteForm.firstName, 1) && hasMin(clienteForm.lastName, 1) && isEmail(clienteForm.email) && hasMin(clienteForm.password, 6);
-  const agenteValid = hasMin(agenteForm.firstName, 1) && hasMin(agenteForm.lastName, 1) && isEmail(agenteForm.email) && hasMin(agenteForm.password, 6) && Number(agenteForm.level) >= 1 && Number(agenteForm.level) <= 5;
+  const agenteValid = hasMin(agenteForm.firstName, 1) && hasMin(agenteForm.lastName, 1) && isEmail(agenteForm.email) && hasMin(agenteForm.password, 6);
   const adminValid = hasMin(adminForm.firstName, 1) && hasMin(adminForm.lastName, 1) && isEmail(adminForm.email) && hasMin(adminForm.password, 6);
   const isCreateValid = activeTab === 'cliente' ? clienteValid : activeTab === 'agente' ? agenteValid : adminValid;
 
@@ -267,7 +267,7 @@ export default function Usuarios() {
                 <div className="space-y-4">
                   <div className="rounded-md border p-3 bg-muted/40 flex items-start gap-3">
                     <Laptop className="h-5 w-5 text-primary" />
-                    <p className="text-xs text-muted-foreground">Defina especialização, nível e disponibilidade.</p>
+                    <p className="text-xs text-muted-foreground">Defina especialização e disponibilidade.</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>{t('users.form.name')}</Label><Input value={agenteForm.firstName} onChange={(e) => setAgenteForm({ ...agenteForm, firstName: e.target.value })} /></div>
@@ -275,10 +275,9 @@ export default function Usuarios() {
                   </div>
                   <div className="space-y-2"><Label>{t('users.form.email')}</Label><Input type="email" value={agenteForm.email} onChange={(e) => setAgenteForm({ ...agenteForm, email: e.target.value })} /></div>
                   <div className="space-y-2"><Label>{t('users.form.password')}</Label><Input type="password" value={agenteForm.password} onChange={(e) => setAgenteForm({ ...agenteForm, password: e.target.value })} /></div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>{t('users.form.status')}</Label><Select value={agenteForm.status} onValueChange={(v: 'Ativo' | 'Inativo') => setAgenteForm({ ...agenteForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Ativo">Ativo</SelectItem><SelectItem value="Inativo">Inativo</SelectItem></SelectContent></Select></div>
                     <div className="space-y-2"><Label>{t('users.form.specialization')}</Label><Input value={agenteForm.specialization} onChange={(e) => setAgenteForm({ ...agenteForm, specialization: e.target.value })} placeholder="Redes" /></div>
-                    <div className="space-y-2"><Label>{t('users.form.level')}</Label><Input type="number" min={1} max={5} value={agenteForm.level} onChange={(e) => setAgenteForm({ ...agenteForm, level: Number(e.target.value) })} /></div>
                   </div>
                   <div className="space-y-2"><Label>{t('users.form.available')}</Label><Select value={agenteForm.isAvailable ? 'true' : 'false'} onValueChange={(v: 'true' | 'false') => setAgenteForm({ ...agenteForm, isAvailable: v === 'true' })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="true">Sim</SelectItem><SelectItem value="false">Não</SelectItem></SelectContent></Select></div>
                 </div>

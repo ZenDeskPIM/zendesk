@@ -69,10 +69,22 @@ export default function TodosChamados() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { loading: authLoading, user: authUser } = useAuth();
+  const rawType = authUser?.userType;
+  const normalizedType = typeof rawType === "string" ? rawType.toLowerCase() : String(rawType ?? "").toLowerCase();
+  const isAgent = normalizedType === "agent" || normalizedType === "2";
+  const isAdmin = normalizedType === "admin" || normalizedType === "3";
+  const isStaff = isAgent || isAdmin;
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isStaff) {
+      navigate("/meus-tickets", { replace: true });
+    }
+  }, [authLoading, isStaff, navigate]);
 
   useEffect(() => {
     // Wait for auth bootstrap (token/profile) to finish so API requests include a restored token.
-    if (authLoading) return;
+    if (authLoading || !isStaff) return;
     let ignore = false;
     async function load() {
       setLoading(true);
@@ -105,7 +117,7 @@ export default function TodosChamados() {
     }
     void load();
     return () => { ignore = true; };
-  }, [replaceAll, authLoading, authUser]);
+  }, [replaceAll, authLoading, authUser, isStaff]);
 
   const filteredTickets = useMemo(() => tickets.filter(ticket => {
     const matchesSearch = ticket.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
