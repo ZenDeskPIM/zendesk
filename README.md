@@ -1,92 +1,66 @@
-# Helpdesk App
+# 📌 ZenTicket - Revolucionando o Suporte Técnico com Inteligência Artificial  
 
-Aplicação de helpdesk (Vite + React + TypeScript + Tailwind + shadcn/ui).
+_Soluções integradas de suporte técnico com IA para empresas que buscam eficiência e organização._
 
-## Scripts
+---
 
-```sh
-# instalar deps
-npm install
+## 📝 Descrição do Desafio  
+Muitas empresas enfrentam **desorganização no suporte técnico interno**: chamados abertos por e-mail ou telefone, dificuldade em acompanhar o status e falhas na priorização.  
+O **ZenTicket** nasceu para resolver essa dor, centralizando e automatizando o atendimento de TI com **inteligência artificial**.
 
-# dev server (http://localhost:8080 por padrão)
-npm run dev
+---
 
-# lint
-npm run lint
+## 📋 Backlog do Produto  
 
-# build de produção
-npm run build
+👉 [Acesse o Backlog Completo](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Backlog.md)
 
-# preview do build local
-npm run preview
-```
+---
 
-## Estrutura (resumo)
+## 📆 Cronograma de Evolução do Projeto  
 
-- `src/pages/` — páginas (Dashboard, Tickets, Relatórios, etc.)
-- `src/hooks/` — hooks (ex.: `use-tickets`, `use-local-storage`)
-- `src/components/` — componentes (layout e ui)
-- `public/` — assets estáticos
+👉 [Acesse o DiagramaGantt](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/gantt.md)
 
-## Notas
+---
 
-- Tickets são persistidos em LocalStorage via `use-tickets`.
-- Tema dark/ligth habilitado; UI com shadcn/ui.
+## 📋 Tabela descritiva das Sprints  
 
-## Deploy
+👉 [Acesse as Sprints](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Sprints.md)
 
-Pode ser publicado em Vercel/Netlify/GitHub Pages. Gere o build com `npm run build` e aponte o host para a pasta `dist/`.
+---
 
-## Testes
+## 🛠 Tecnologias Utilizadas  
 
-### Frontend
-Executar testes unitários (Vitest):
+👉 [Acesse as Tecnologias](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Tecnologias.md)
 
-```
-npm test
-```
+---
 
-Interface interativa opcional:
+## 🛠 Estrutura do Projeto
 
-```
-npm run test:ui
-```
+👉 [Acesse a Estrutura do Projeto](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Estrutura.md)
 
-Cobertura:
+---
 
-```
-npm run test -- --coverage
-```
+## Como executar, usar e testar o projeto
 
-### Backend (.NET API)
+👉 [Acesse Execução e Testes do Projeto](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Execu%C3%A7%C3%A3o%20e%20Testes%20do%20Projeto.md)
 
-Executar todos os testes:
+---
 
-```
-dotnet test TicketSystem.API/TicketSystem.API.sln
-```
+## 🗂️ Pasta de Documentação
 
-Gerar cobertura (coverlet collector já referenciado):
+👉 [Acesse a Documentação](https://github.com/ZenDeskPIM/zendesk/tree/main/docs)
+* [Acesse os Diagramas UML](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Diagramas/Diagrama%20ZenDesk.asta)
 
-```
-dotnet test TicketSystem.API/TicketSystem.API.sln /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
-```
+    
+### 🏃‍ DoR - Definition of Ready / DoD - Definition of Done
 
-### Estrutura de Testes Backend
-| Tipo               | Local                    | Descrição                                          |
-| ------------------ | ------------------------ | -------------------------------------------------- |
-| Health/Auth        | `TicketSystem.API.Tests` | Testes básicos de disponibilidade e autenticação   |
-| AutoMapper         | `AutoMapperProfileTests` | Valida configuração de mapeamentos                 |
-| Integração Tickets | `TicketsControllerTests` | Exercita endpoints CRUD iniciais com DB em memória |
+* [Checklist Geral](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/DoR%20e%20DoD/Checklist_DoR_DoD.md)
+* [DoR e DoD por sprint](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/DoR%20e%20DoD/DoR_DoD_por_sprint.md)
+    * [Manual de Usuário](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/DoR%20e%20DoD/Manual%20do%20Usuario.md)
+    * [Manual da Aplicação](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/DoR%20e%20DoD/Manual%20de%20Aplica%C3%A7%C3%A3o.md)
 
-Utilizamos `WebApplicationFactory` + EFCore InMemory para isolar o banco.
+---
 
-### Adicionando Novos Testes
-1. Criar arquivo `*.cs` em `TicketSystem.API.Tests`.
-2. Usar `IClassFixture<CustomWebApplicationFactory>` para obter `HttpClient` configurado.
-3. Popular dados extras via `factory.Services.CreateScope()` quando necessário.
+## 👨‍💻 Equipe
 
-### Dicas
-- Evite lógica complexa nos testes; concentre-se em cenários de usuário.
-- Prefira asserts claros com FluentAssertions.
-- Nomeie os testes no padrão: `Metodo_Condicao_EfeitoEsperado`.
+👉 [Acesse a Equipe](https://github.com/ZenDeskPIM/zendesk/blob/main/docs/Equipe.md)
