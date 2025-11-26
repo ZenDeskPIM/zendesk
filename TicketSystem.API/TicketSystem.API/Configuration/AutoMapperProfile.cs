@@ -19,10 +19,12 @@ namespace TicketSystem.API.Configuration
                 .ForMember(dest => dest.Specialization, opt => opt.Ignore())
                 .ForMember(dest => dest.Level, opt => opt.Ignore())
                 .ForMember(dest => dest.IsAvailable, opt => opt.Ignore())
+                .ForMember(dest => dest.Department, opt => opt.Ignore())
                 .IncludeAllDerived();
 
             CreateMap<Customer, UserDto>()
-                .IncludeBase<User, UserDto>();
+                .IncludeBase<User, UserDto>()
+                .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Department));
 
             CreateMap<Agent, UserDto>()
                 .IncludeBase<User, UserDto>()

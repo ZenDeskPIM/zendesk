@@ -56,6 +56,7 @@ namespace TicketSystem.API.Models.DTOs
         public string FullName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        public string? Department { get; set; }
 
         // Propriedades específicas por tipo
         public string? Specialization { get; set; } // Agent
