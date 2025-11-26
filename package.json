@@ -122,8 +122,8 @@
   },
   "main": "electron/main.js",
   "build": {
-    "appId": "com.helpdeskunip.desktop",
-    "productName": "HelpDeskUNIP",
+    "appId": "com.zenticket.desktop",
+    "productName": "ZenTicket",
     "directories": {
       "buildResources": "build"
     },
@@ -131,11 +131,12 @@
       "dist/**/*",
       "electron/**/*"
     ],
-    "artifactName": "HelpDeskUNIP-${version}-${os}-${arch}.${ext}",
+    "artifactName": "ZenTicket-${version}-${os}-${arch}.${ext}",
     "extraMetadata": {
       "main": "electron/main.js"
     },
     "win": {
+      "icon": "build/icon.png",
       "target": [
         {
           "target": "nsis",

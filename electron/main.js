@@ -28,8 +28,15 @@ function createWindow() {
         win.loadURL('http://localhost:8080');
         win.webContents.openDevTools({ mode: 'detach' });
     } else {
-        const indexPath = path.resolve(__dirname, '../dist/index.html');
-        win.loadFile(indexPath);
+        // When packaged, the app runs from resources/app/electron/main.js
+        // and dist is at resources/app/dist/index.html
+        const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+        win.loadFile(indexPath).catch((err) => {
+            console.error('Failed to load index.html:', err);
+            // Fallback: try alternate path
+            const altPath = path.join(process.resourcesPath, 'app', 'dist', 'index.html');
+            win.loadFile(altPath).catch(console.error);
+        });
     }
 
     // Open external links in default browser
@@ -54,7 +61,7 @@ if (!gotTheLock) {
     });
 
     app.whenReady().then(() => {
-        app.setAppUserModelId('HelpDeskUNIP');
+        app.setAppUserModelId('ZenTicket');
         createWindow();
         app.on('activate', () => {
             if (BrowserWindow.getAllWindows().length === 0) createWindow();

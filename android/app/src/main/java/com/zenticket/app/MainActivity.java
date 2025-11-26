@@ -1,4 +1,4 @@
-package com.suaempresa.helpdesk;
+package com.zenticket.app;
 
 import com.getcapacitor.BridgeActivity;
 
