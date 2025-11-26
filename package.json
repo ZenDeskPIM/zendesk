@@ -1,5 +1,6 @@
 {
   "name": "vite_react_shadcn_ts",
+  "description": "ZenTicket - Plataforma de Suporte Inteligente",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -25,7 +26,9 @@
     "build:android": "vite build --mode android",
     "android:sync": "npm run android:build && npx cap sync android",
     "electron:dev": "concurrently \"npm run dev:web\" \"cross-env NODE_ENV=development electron .\"",
-    "electron:build": "npm run build && electron-builder",
+    "electron:prebuild": "node ./scripts/prepare-electron-build.mjs",
+    "electron:build": "npm run electron:prebuild && npm run build:electron && node ./scripts/run-electron-builder.mjs",
+    "build:electron": "vite build --mode electron",
     "api:seed-tickets": "node ./scripts/seed-tickets.mjs"
   },
   "dependencies": {
@@ -121,22 +124,35 @@
     "electron-builder": "^25.1.8"
   },
   "main": "electron/main.js",
+  "author": {
+    "name": "Equipe ZenTicket",
+    "email": "contato@zenticket.com"
+  },
   "build": {
     "appId": "com.zenticket.desktop",
     "productName": "ZenTicket",
     "directories": {
-      "buildResources": "build"
+      "buildResources": "build",
+      "output": "electron-build"
     },
     "files": [
-      "dist/**/*",
-      "electron/**/*"
+      "electron-app/dist/**/*",
+      "electron/**/*",
+      "!**/*.map"
     ],
+    "asar": true,
     "artifactName": "ZenTicket-${version}-${os}-${arch}.${ext}",
     "extraMetadata": {
       "main": "electron/main.js"
     },
+    "extraResources": [
+      {
+        "from": "public/icons/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "win": {
-      "icon": "build/icon.png",
+      "icon": "public/icons/icon.png",
       "target": [
         {
           "target": "nsis",

@@ -5,7 +5,11 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   // Important for Electron builds: make asset paths relative when bundling for file://
-  base: mode === 'electron' ? './' : undefined,
+  base: mode === 'electron' || mode === 'android' ? './' : '/',
+  build: {
+    outDir: mode === 'electron' ? 'electron-app/dist' : 'dist',
+    emptyOutDir: true,
+  },
   server: {
     host: "::",
     port: 8080,
