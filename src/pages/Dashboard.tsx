@@ -65,6 +65,10 @@ export default function Dashboard() {
   const { tickets } = useTickets();
   const { loading: authLoading, user: authUser } = useAuth();
   const { replaceAll, upsertTicketDetail } = useTickets();
+  const normalizedType = String(authUser?.userType ?? "").trim().toLowerCase();
+  const isAgent = normalizedType === "agent" || normalizedType === "2";
+  const isAdmin = normalizedType === "admin" || normalizedType === "3";
+  const isAgentOnly = isAgent && !isAdmin;
 
   // Load tickets on dashboard mount (and when auth bootstrap completes)
   useEffect(() => {
@@ -188,15 +192,17 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          <Button
-            size="lg"
-            variant="secondary"
-            className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
-            onClick={() => navigate("/novo-ticket")}
-          >
-            <TicketPlus className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-            <span className="text-sm md:text-base">Abrir Novo Ticket</span>
-          </Button>
+          {!isAgentOnly && (
+            <Button
+              size="lg"
+              variant="secondary"
+              className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto"
+              onClick={() => navigate("/novo-ticket")}
+            >
+              <TicketPlus className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-sm md:text-base">Abrir Novo Ticket</span>
+            </Button>
+          )}
         </div>
       </div>
 

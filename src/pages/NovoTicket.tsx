@@ -11,7 +11,7 @@
  * - Acessibilidade: tooltips explicativos, textos auxiliares, estados de loading e descrição de sugestões.
  */
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,6 @@ export default function NovoTicket() {
     description: "",
     user: "",
     department: "", // display name only
-    email: "",
 
   });
   const [departments, setDepartments] = useState<Dept[]>([]);
@@ -101,10 +100,12 @@ export default function NovoTicket() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { user: authUser } = useAuth();
   const rawUserType = authUser?.userType;
-  const normalizedUserType = typeof rawUserType === "string" ? rawUserType.toLowerCase() : String(rawUserType ?? "").toLowerCase();
+  const normalizedUserType = String(rawUserType ?? "").trim().toLowerCase();
   const isAgent = normalizedUserType === "agent" || normalizedUserType === "2";
   const isAdmin = normalizedUserType === "admin" || normalizedUserType === "3";
+  const isCustomer = normalizedUserType === "customer" || normalizedUserType === "1";
   const isStaff = isAgent || isAdmin;
+  const isAgentOnly = isAgent && !isAdmin;
   const { upsertTicketDetail } = useTickets();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -122,7 +123,8 @@ export default function NovoTicket() {
     const savedDraft = localStorage.getItem('ticket-draft');
     if (savedDraft) {
       const parsed = JSON.parse(savedDraft);
-      setFormData((prev) => ({ ...prev, ...parsed }));
+      const { email: _email, ...rest } = parsed;
+      setFormData((prev) => ({ ...prev, ...rest }));
     }
   }, []);
 
@@ -204,14 +206,13 @@ export default function NovoTicket() {
       }
       if (authUser && !ignore) {
         const name = authUser.fullName || authUser.email.split("@")[0];
-        setFormData((prev) => ({ ...prev, user: name, email: authUser.email }));
+        setFormData((prev) => ({ ...prev, user: name }));
       }
-      // If authenticated user is not a Customer, load customers for selection
+      // Load customers only for administradores
       try {
-        const isCustomer = (authUser?.userType as string | undefined)?.toString().toLowerCase() === "customer";
-        if (authUser && !isCustomer) {
+        if (authUser && isAdmin) {
           const res = await listCustomers({ page: 1, pageSize: 200 });
-          if (!ignore) setCustomers(res.items ?? res.items);
+          if (!ignore) setCustomers(res.items ?? []);
         }
       } catch {
         // ignore load errors
@@ -219,7 +220,7 @@ export default function NovoTicket() {
     }
     void boot();
     return () => { ignore = true; };
-  }, [authUser]);
+  }, [authUser, isAdmin]);
 
   // Validation - Heurística 5: Prevenção de erros
   const validateForm = () => {
@@ -249,13 +250,8 @@ export default function NovoTicket() {
       newErrors.department = "Setor é obrigatório";
     }
 
-    const isCustomer = (authUser?.userType as string | undefined)?.toString().toLowerCase() === "customer";
-    if (!isCustomer && !selectedCustomerId) {
+    if (isAdmin && !selectedCustomerId) {
       newErrors.customer = "Selecione o cliente para este chamado";
-    }
-
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "E-mail inválido";
     }
 
     setErrors(newErrors);
@@ -346,8 +342,7 @@ export default function NovoTicket() {
       }
 
       // Call backend
-      // Build payload and include customerId either from the auth user (if Customer) or from selected customer
-      const isCustomer = (authUser?.userType as string | undefined)?.toString().toLowerCase() === "customer";
+      // Build payload and include customerId either from the auth user (if Customer) or from selected cliente
       const payload: CreateTicketInput = {
         subject: formData.title,
         description: formData.description,
@@ -355,7 +350,7 @@ export default function NovoTicket() {
         departmentId: departmentId,
       };
       if (isCustomer && authUser) payload.customerId = authUser.id;
-      if (!isCustomer && selectedCustomerId) payload.customerId = selectedCustomerId;
+      if (isAdmin && selectedCustomerId) payload.customerId = selectedCustomerId;
 
       const created = await createTicket(payload);
 
@@ -385,7 +380,7 @@ export default function NovoTicket() {
 
       toast({
         title: "Ticket criado com sucesso!",
-        description: `Protocolo: ${created.id}. Você receberá atualizações por email.`,
+        description: `Protocolo: ${created.id}.`,
         duration: 5000,
       });
 
@@ -397,7 +392,6 @@ export default function NovoTicket() {
         description: "",
         user: "",
         department: "",
-        email: "",
 
       });
       setDepartmentId(null);
@@ -427,7 +421,6 @@ export default function NovoTicket() {
       description: "",
       user: "",
       department: "",
-      email: "",
 
     });
     setDepartmentId(null);
@@ -442,6 +435,10 @@ export default function NovoTicket() {
   };
 
   const selectedPriority = priorities.find(p => p.value === formData.priority);
+
+  if (isAgentOnly) {
+    return <Navigate to="/todos-chamados" replace />;
+  }
 
   return (
     <TooltipProvider>
@@ -745,26 +742,9 @@ export default function NovoTicket() {
                     </div>
                   </div>
 
-                  {/* Contact Information */}
-                  <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">E-mail para Contato</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="seu.email@empresa.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                        className={errors.email ? 'border-destructive' : ''}
-                      />
-                      {errors.email && (
-                        <p className="text-sm text-destructive">{errors.email}</p>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* If the authenticated user is not a Customer, show a customer selector */}
-                  {authUser && ((authUser.userType as string | undefined)?.toString().toLowerCase() !== "customer") && (
+                  {/* Seleção de cliente disponível apenas para administradores */}
+                  {isAdmin && (
                     <div className="mt-4">
                       <Label className="text-sm font-medium">Cliente *</Label>
                       <Select

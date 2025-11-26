@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   HelpCircle,
   FileText,
-  Settings,
   Users,
   BarChart3,
   Ticket
@@ -42,7 +41,6 @@ const mainItems = [
 const adminItems = [
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
   { title: "Usuários", url: "/usuarios", icon: Users },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -54,6 +52,7 @@ export function AppSidebar() {
   const isAdmin = normalizedType === "admin" || normalizedType === "3";
   const isAgent = normalizedType === "agent" || normalizedType === "2";
   const isStaff = isAdmin || isAgent;
+  const isAgentOnly = isAgent && !isAdmin;
 
   const isActive = (path: string) => currentPath === path;
 
@@ -81,7 +80,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems
-                .filter((item) => item.url !== "/todos-chamados" ? true : isStaff)
+                .filter((item) => {
+                  if (item.url === "/todos-chamados") return isStaff;
+                  if (item.url === "/novo-ticket") return !isAgentOnly;
+                  return true;
+                })
                 .map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>

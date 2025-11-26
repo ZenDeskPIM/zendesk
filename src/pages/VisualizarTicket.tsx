@@ -19,6 +19,7 @@ import { useTickets, Ticket as StoreTicket } from "@/hooks/use-tickets";
 import { useAuth } from "@/hooks/use-auth-hook";
 import { useToast } from "@/hooks/use-toast";
 import { assignTicketByDbId, getTicketByNumber, addTicketMessage, getTicketMessages, type ApiMessage } from "@/lib/tickets";
+import { maskUserIdentifier } from "@/lib/user-display";
 
 type Ticket = StoreTicket;
 
@@ -447,7 +448,7 @@ export default function VisualizarTicket() {
                 <Label htmlFor="usuario">Usuário</Label>
                 <Input
                   id="usuario"
-                  value={ticket.usuario}
+                  value={maskUserIdentifier(ticket.usuario)}
                   readOnly
                   className="bg-muted cursor-not-allowed"
                 />
