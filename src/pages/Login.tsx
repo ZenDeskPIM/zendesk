@@ -141,76 +141,22 @@ export default function Login() {
               </div>
             </>
           ) : (
-            <div className="space-y-4">
-              {!resetSent ? (
-                <>
-                  <div className="text-center mb-4">
-                    <h3 className="text-lg font-semibold">Redefinir Senha</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Preencha os campos abaixo para receber o link de redefinição
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-name">Nome</Label>
-                      <Input
-                        id="reset-name"
-                        type="text"
-                        placeholder="Seu nome completo"
-                        value={resetName}
-                        onChange={(e) => setResetName(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          id="reset-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={resetEmail}
-                          onChange={(e) => setResetEmail(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      size="lg"
-                    >
-                      Enviar
-                    </Button>
-                  </form>
-
-                  <div className="text-center">
-                    <Button
-                      type="button"
-                      variant="link"
-                      onClick={() => setShowForgotPassword(false)}
-                      className="text-sm text-muted-foreground hover:text-primary"
-                    >
-                      Voltar ao login
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-6">
-                  <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <Mail className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">Email Enviado!</h3>
-                  <p className="text-sm text-muted-foreground">
-                    O link para redefinição de senha foi enviado para seu email
-                  </p>
-                </div>
-              )}
+            <div className="space-y-4 text-center">
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <Lock className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold">Redefinição de senha</h3>
+              <p className="text-sm text-muted-foreground">
+                Fale com o superior responsável do seu departamento para receber uma nova senha.
+              </p>
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setShowForgotPassword(false)}
+                className="text-sm text-muted-foreground hover:text-primary"
+              >
+                Voltar ao login
+              </Button>
             </div>
           )}
 

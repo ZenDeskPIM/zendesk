@@ -4,7 +4,8 @@ import axios from "axios";
 const API_URL = process.env.API_URL ?? "http://localhost:5140/api";
 const API_EMAIL = process.env.API_EMAIL ?? "admin@ticketsystem.com";
 const API_PASSWORD = process.env.API_PASSWORD ?? "admin123";
-const TOTAL_TO_CREATE = Number.parseInt(process.env.TICKET_COUNT ?? "30", 10);
+const DEFAULT_TICKET_COUNT = 54;
+const TOTAL_TO_CREATE = Number.parseInt(process.env.TICKET_COUNT ?? String(DEFAULT_TICKET_COUNT), 10);
 
 if (!Number.isFinite(TOTAL_TO_CREATE) || TOTAL_TO_CREATE <= 0) {
     console.error(`Quantidade inválida em TICKET_COUNT: ${process.env.TICKET_COUNT}`);
@@ -20,17 +21,53 @@ const client = axios.create({
 });
 
 const priorities = ["Urgent", "High", "Normal", "Low"];
-const subjects = [
-    "Intermitência no sistema",
-    "Erro de login em dispositivos móveis",
-    "Solicitação de acesso",
-    "Atualização de firmware",
-    "Problema de impressão",
-    "Integração com ERP",
-    "Falha na sincronização",
-    "Acesso wifi instável",
-    "Backup não executado",
-    "Configuração de e-mail",
+const statuses = [
+    "Open",
+    "InProgress",
+    "Pending",
+    "WaitingCustomer",
+    "WaitingAgent",
+    "Resolved",
+    "Closed",
+    "Cancelled",
+];
+const categories = [
+    {
+        label: "Hardware",
+        issues: [
+            "Impressora laser travada",
+            "Desktop sem vídeo",
+            "Monitor piscando",
+            "Servidor com disco em alerta",
+        ],
+    },
+    {
+        label: "Software",
+        issues: [
+            "ERP não sincroniza pedidos",
+            "Aplicativo mobile fecha sozinho",
+            "Atualização do Windows falhou",
+            "Erro 500 ao acessar portal interno",
+        ],
+    },
+    {
+        label: "Periféricos",
+        issues: [
+            "Scanner não reconhecido",
+            "Mouse com cliques duplos involuntários",
+            "Headset sem áudio",
+            "Webcam com imagem invertida",
+        ],
+    },
+    {
+        label: "Acessos",
+        issues: [
+            "Reativar usuário bloqueado",
+            "Reset de MFA corporativo",
+            "Provisionar acesso ao SharePoint",
+            "VPN desconecta após login",
+        ],
+    },
 ];
 const descriptions = [
     "Ticket gerado automaticamente para teste de carga das integrações.",
@@ -67,6 +104,19 @@ async function fetchDepartments() {
     return departments;
 }
 
+function composeSubject(index, batchTimestamp) {
+    const category = categories[index % categories.length];
+    const issueList = category.issues;
+    const issue = issueList[index % issueList.length];
+    const suffix = String(index + 1).padStart(2, "0");
+    return `[${category.label}] ${issue} - Lote ${batchTimestamp} #${suffix}`;
+}
+
+async function updateTicketStatus(dbId, targetStatus) {
+    if (!dbId || !targetStatus || targetStatus === "Open") return;
+    await client.put(`/tickets/${dbId}/status`, { NewStatus: targetStatus });
+}
+
 async function createTickets(departments) {
     console.log(`→ Iniciando criação de ${TOTAL_TO_CREATE} tickets`);
     const results = [];
@@ -75,18 +125,29 @@ async function createTickets(departments) {
     for (let index = 0; index < TOTAL_TO_CREATE; index += 1) {
         const department = departments[index % departments.length];
         const priority = priorities[index % priorities.length];
-        const subjectSuffix = String(index + 1).padStart(2, "0");
-        const subject = `${pickRandom(subjects)} - Lote ${batchTimestamp} #${subjectSuffix}`;
-        const description = `${pickRandom(descriptions)}\nLote: ${batchTimestamp}\nSequência: ${index + 1}`;
+        const category = categories[index % categories.length];
+        const subject = composeSubject(index, batchTimestamp);
+        const description = `${pickRandom(descriptions)}\nCategoria simulada: ${category.label}\nLote: ${batchTimestamp}\nSequência: ${index + 1}`;
+        const targetStatus = statuses[index % statuses.length];
 
         try {
-            await client.post("/tickets", {
+            const response = await client.post("/tickets", {
                 subject,
                 description,
                 priority,
                 departmentId: department.id,
             });
-            console.log(`✔ Ticket ${index + 1}/${TOTAL_TO_CREATE} criado (${priority} - ${department.name})`);
+            const ticketId = response?.data?.data?.id;
+            if (!ticketId) {
+                throw new Error("API não retornou o identificador do ticket criado");
+            }
+
+            await updateTicketStatus(ticketId, targetStatus).catch((error) => {
+                const status = error?.response?.status ?? "?";
+                console.warn(`⚠ Falha ao ajustar status de ticket ${ticketId} para ${targetStatus} (status ${status})`);
+            });
+
+            console.log(`✔ Ticket ${index + 1}/${TOTAL_TO_CREATE} criado (${priority} - ${department.name} - ${targetStatus})`);
             results.push(true);
         } catch (error) {
             const status = error?.response?.status ?? "?";
