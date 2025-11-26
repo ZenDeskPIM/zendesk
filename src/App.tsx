@@ -14,7 +14,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Layout } from "./components/layout/Layout";
 import { AuthProvider } from "./hooks/use-auth";
@@ -62,6 +62,8 @@ function StaffRoute({ children }: { children: React.ReactElement }) {
   return (isAgent || isAdmin) ? children : <Navigate to="/meus-tickets" replace />;
 }
 
+const RouterComponent = import.meta.env.MODE === "electron" || window.location.protocol === "file:" ? HashRouter : BrowserRouter;
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
     <QueryClientProvider client={queryClient}>
@@ -69,7 +71,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
+          <RouterComponent>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Navigate to="/login" replace />} />
@@ -163,7 +165,7 @@ const App = () => (
                 </PrivateRoute>
               } />
             </Routes>
-          </BrowserRouter>
+          </RouterComponent>
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

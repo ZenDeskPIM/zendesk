@@ -9,16 +9,21 @@
  */
 import axios, { AxiosHeaders } from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL as string | undefined;
+const FALLBACK_API_URL = (() => {
+    if (import.meta.env.MODE === "android") return "http://10.0.2.2:5140/api";
+    return "http://localhost:5140/api";
+})();
 
-if (!API_URL) {
-    // Soft warning in dev; avoids crashing build
-    console.warn("VITE_API_URL is not set. Set it in .env.local, e.g., VITE_API_URL=http://localhost:5140/api");
+const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_URL = configuredApiUrl || FALLBACK_API_URL;
+
+if (!configuredApiUrl) {
+    console.warn("VITE_API_URL is not set. Falling back to", API_URL);
 }
 
-// Helpful at runtime (especially in Android builds) to confirm which base URL is in use
-if (import.meta.env.MODE === "android") {
-    console.info("[Android] Using VITE_API_URL:", API_URL);
+// Helpful at runtime (especially in Android/Electron builds) to confirm which base URL is in use
+if (import.meta.env.MODE === "android" || import.meta.env.MODE === "electron") {
+    console.info(`[${import.meta.env.MODE}] Using API URL:`, API_URL);
 }
 
 /** Chave usada no localStorage para persistir o token JWT */
@@ -47,6 +52,7 @@ export function setToken(token: string | null) {
 export const api = axios.create({
     baseURL: API_URL,
     headers: { "Content-Type": "application/json" },
+    timeout: 6000,
 });
 
 // Interceptor de request: injeta Authorization: Bearer <token>

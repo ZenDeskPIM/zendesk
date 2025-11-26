@@ -100,11 +100,12 @@ builder.Services.AddCors(options =>
 	{
 		if (builder.Environment.IsDevelopment())
 		{
-			// In Development, be maximally permissive to unblock mobile/WebView
+			// In Development, be maximally permissive to unblock mobile/WebView/ngrok
 			policy
 				.SetIsOriginAllowed(_ => true)
 				.AllowAnyHeader()
-				.AllowAnyMethod();
+				.AllowAnyMethod()
+				.AllowCredentials();
 		}
 		else if (allowedOrigins.Length > 0)
 		{

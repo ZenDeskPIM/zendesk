@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useTickets, type Ticket as StoreTicket, type TicketStatus } from "@/hooks/use-tickets";
 import { addTicketMessage, getTicketByNumber, updateTicketStatusByNumber } from "@/lib/tickets";
+import { maskUserIdentifier } from "@/lib/user-display";
 import { useAuth } from "@/hooks/use-auth-hook";
 
 type Ticket = StoreTicket;
@@ -271,7 +272,7 @@ export default function EditarTicket() {
                   </div>
                   <div>
                     <Label>Solicitante</Label>
-                    <p className="text-sm text-muted-foreground">{ticket.usuario || "Não informado"}</p>
+                    <p className="text-sm text-muted-foreground">{maskUserIdentifier(ticket.usuario)}</p>
                   </div>
                   <div>
                     <Label>Data de abertura</Label>

@@ -95,3 +95,9 @@ android/app/src/main/assets/capacitor.config.json
 *.keystore
 *.jks
 *.iml
+
+# Electron build artifacts
+electron-build/
+electron-dist/
+electronapp/
+electron-app/

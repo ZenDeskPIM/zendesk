@@ -7,12 +7,15 @@ vi.mock('./api', () => {
         api: {
             get: vi.fn(),
             post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
         },
     }
 })
 
 import { api } from './api'
-import { listUsers, listCustomers, createUser, type ApiUser } from './users'
+import { listUsers, listCustomers, createUser, type ApiUser, getUserById, updateUser, setUserStatus, deleteUser } from './users'
 
 // Helper to cast mocked functions for type-safe expectation usage
 const asMock = <T extends (...args: any[]) => any>(fn: T) => fn as unknown as ReturnType<typeof vi.fn>
@@ -70,5 +73,40 @@ describe('users api layer', () => {
 
         expect(api.post).toHaveBeenCalledWith('/users', input)
         expect(res).toEqual(created)
+    })
+
+    it('getUserById retrieves single user', async () => {
+        asMock(api.get).mockResolvedValueOnce({ data: { data: sampleUser } })
+
+        const res = await getUserById(1)
+
+        expect(api.get).toHaveBeenCalledWith('/users/1')
+        expect(res.id).toBe(1)
+    })
+
+    it('updateUser sends payload via PUT', async () => {
+        const payload = { firstName: 'John', lastName: 'Doe', email: 'john@example.com', isActive: false }
+        asMock(api.put).mockResolvedValueOnce({ data: { data: sampleUser } })
+
+        await updateUser(1, payload)
+
+        expect(api.put).toHaveBeenCalledWith('/users/1', payload)
+    })
+
+    it('setUserStatus toggles active flag', async () => {
+        asMock(api.patch).mockResolvedValueOnce({ data: { data: { ...sampleUser, isActive: false } } })
+
+        const res = await setUserStatus(1, false)
+
+        expect(api.patch).toHaveBeenCalledWith('/users/1/status', { isActive: false })
+        expect(res.isActive).toBe(false)
+    })
+
+    it('deleteUser calls DELETE endpoint', async () => {
+        asMock(api.delete).mockResolvedValueOnce(Promise.resolve())
+
+        await deleteUser(5)
+
+        expect(api.delete).toHaveBeenCalledWith('/users/5')
     })
 })

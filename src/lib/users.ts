@@ -27,6 +27,7 @@ export type ApiUser = {
     specialization?: string | null; // Agent
     level?: number | null; // Agent
     isAvailable?: boolean | null; // Agent
+    department?: string | null; // Customer
 };
 
 /** Formato padrão de resposta paginada da API */
@@ -91,4 +92,37 @@ export async function createUser(input: {
 }) {
     const res = await api.post<ApiResponse<ApiUser>>("/users", input);
     return res.data.data;
+}
+
+/** Obtém usuário por ID (admin only). */
+export async function getUserById(id: number) {
+    const res = await api.get<ApiResponse<ApiUser>>(`/users/${id}`);
+    return res.data.data;
+}
+
+/** Atualiza usuário existente. */
+export async function updateUser(id: number, input: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    isActive: boolean;
+    password?: string;
+    department?: string;
+    specialization?: string;
+    level?: number;
+    isAvailable?: boolean;
+}) {
+    const res = await api.put<ApiResponse<ApiUser>>(`/users/${id}`, input);
+    return res.data.data;
+}
+
+/** Atualiza apenas o status ativo/inativo. */
+export async function setUserStatus(id: number, isActive: boolean) {
+    const res = await api.patch<ApiResponse<ApiUser>>(`/users/${id}/status`, { isActive });
+    return res.data.data;
+}
+
+/** Remove (soft delete) um usuário. */
+export async function deleteUser(id: number) {
+    await api.delete(`/users/${id}`);
 }
